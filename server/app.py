@@ -10,8 +10,11 @@ def hello():
 # POST request
 @app.route("/post", methods=['POST'])
 def post():
-    # Return a JSON response with the text field set to "hello world!"
-    return jsonify(text="hello world!")
+    request_data = request.get_json()
+    message = request_data.get('message')
+    if message is None:
+        return jsonify(error="message field is required"), 400
+    return jsonify(text=message)
 
 
 if __name__ == "__main__":
