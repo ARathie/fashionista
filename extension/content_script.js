@@ -10,10 +10,28 @@ floatingIcon.appendChild(iconImage);
 
 document.body.appendChild(floatingIcon);
 
+// const popupWrapper = document.createElement('div');
+// popupWrapper.id = 'website-talker-popup-wrapper';
+// popupWrapper.style.display = 'none';
+// document.body.appendChild(popupWrapper);
+
 const popupWrapper = document.createElement('div');
 popupWrapper.id = 'website-talker-popup-wrapper';
 popupWrapper.style.display = 'none';
+popupWrapper.style.width = '400px';
+popupWrapper.style.height = '500px';
+popupWrapper.style.padding = '10px';
+popupWrapper.style.boxSizing = 'border-box';
 document.body.appendChild(popupWrapper);
+
+const popupFrame = document.createElement('iframe');
+popupFrame.id = 'website-talker-popup-frame';
+popupFrame.src = chrome.runtime.getURL('popup.html');
+popupFrame.style.border = 'none';
+popupFrame.style.width = '400px';
+popupFrame.style.height = '500px';
+popupWrapper.appendChild(popupFrame);
+
 
 const inputDataLabel = document.createElement('label');
 inputDataLabel.setAttribute('for', 'inputData');

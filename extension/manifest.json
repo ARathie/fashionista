@@ -18,6 +18,15 @@
     ],
     "background": {
       "service_worker": "background.js"
-    }
+    },
+    "web_accessible_resources": [
+      {
+        "resources": [ "*.png" ],
+        "matches": ["http://*/*", "https://*/*"]
+      },
+      {
+        "resources": [ "*.html" ],
+        "matches": ["http://*/*", "https://*/*"]
+      }
+    ]
   }
-  

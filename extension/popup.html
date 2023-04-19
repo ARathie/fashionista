@@ -4,15 +4,35 @@
     <meta charset="UTF-8" />
     <style>
       body {
-        width: 300px;
-        height: 200px;
+        margin: 0;
+        width: 350px;
+        height: 400px;
+        display: flex;
+        flex-direction: column;
+        font-family: Arial, sans-serif;
+      }
+      #chatHistory {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 8px;
+      }
+      #chatForm {
+        display: flex;
+        padding: 8px;
+      }
+      #inputData {
+        flex-grow: 1;
       }
     </style>
   </head>
   <body>
-    <label for="inputData">Enter your data:</label>
-    <input type="text" id="inputData" />
-    <button id="sendPostRequest">Send POST Request</button>
+    <div id="chatHistory">
+      <ul id="chatList" style="list-style-type: none; padding: 0;"></ul>
+    </div>
+    <form id="chatForm">
+      <input type="text" id="inputData" placeholder="Type your message..." />
+      <button id="sendPostRequest">Send</button>
+    </form>
     <script src="popup.js"></script>
   </body>
 </html>
