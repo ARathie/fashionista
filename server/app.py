@@ -69,7 +69,6 @@ def post():
                 "price": price,
                 "url": url
             })
-            break
 
         # Return a json object with the text being the rationale, and the outfit pieces as a json dump
         print("Returning JSON response: ", {

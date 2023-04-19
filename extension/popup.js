@@ -37,16 +37,42 @@ function sendPostRequest() {
         serverMessage.textContent = 'An error occurred while sending the POST request. Error: ' + response.error;
       } else {
         serverMessage.textContent = `Server: ${response.text}`;
-      }
 
+        if (response.outfit_pieces) {
+          response.outfit_pieces.forEach((piece) => {
+            const pieceContainer = document.createElement('div');
+            pieceContainer.style.marginTop = '10px';
+
+            const pieceName = document.createElement('p');
+            pieceName.textContent = piece.name;
+            pieceContainer.appendChild(pieceName);
+  
+            if (piece.image_urls && piece.image_urls.length > 0) {
+              const pieceImage = document.createElement('img');
+              pieceImage.src = piece.image_urls[0];
+              pieceImage.style.width = '100px'; // Adjust the image size if necessary
+              pieceImage.style.cursor = 'pointer';
+  
+              pieceImage.addEventListener('click', () => {
+                window.open(piece.url, '_blank');
+              });
+  
+              pieceContainer.appendChild(pieceImage);
+            }
+  
+            serverMessage.appendChild(pieceContainer);
+          });
+        }
+      }
+  
       // Remove typing indicator and add user and server messages
       chatList.removeChild(document.getElementById('typingIndicator'));
       chatList.appendChild(userMessage);
       chatList.appendChild(serverMessage);
-
+  
       // Scroll to the bottom of the chat history
       document.getElementById('chatHistory').scrollTop = chatList.scrollHeight;
-
+  
       // Clear the input field after sending the message
       document.getElementById('inputData').value = '';
     }
