@@ -1,4 +1,5 @@
 let userEmail = "";
+const baseServerUrl = "https://y41pim9ut5.execute-api.us-west-1.amazonaws.com/dev";
 
 function getEmail(callback) {
   console.log('Getting user email...');
@@ -29,7 +30,7 @@ function getEmail(callback) {
 }
 
 function storeUserEmail(email) {
-  const backendServerURL = 'http://127.0.0.1:5001/insert_user_into_db';
+  const backendServerURL = baseServerUrl + '/insert_user_into_db';
   const requestData = {
     email: email
   };
@@ -81,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function sendPostRequest() {
   console.log('Sending POST request...')
-  const backendServerURL = 'http://127.0.0.1:5001/post';
+  const backendServerURL = baseServerUrl + '/post';
   const inputData = document.getElementById('inputData').value;
   console.log('inputData:', inputData)
   console.log('email:', userEmail)
