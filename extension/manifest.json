@@ -3,7 +3,7 @@
     "name": "Website Talker",
     "version": "1.0",
     "description": "A Chrome extension to send POST requests to a server.",
-    "permissions": ["activeTab"],
+    "permissions": ["activeTab", "identity"],
     "host_permissions": ["http://*/*", "https://*/*"],
     "action": {
       "default_icon": "icon.png",
@@ -28,5 +28,9 @@
         "resources": [ "*.html" ],
         "matches": ["http://*/*", "https://*/*"]
       }
-    ]
+    ],
+    "oauth2": {
+      "client_id": "258654283607-7j5jrop061etuloq9idduinkkg9qs9bi.apps.googleusercontent.com",
+      "scopes": ["https://www.googleapis.com/auth/userinfo.email"]
+    }
   }

@@ -78,3 +78,124 @@ def insert_product_info_into_db(product_info):
     # Close communication with the database
     cursor.close()
     connection.close()
+
+
+# Messaging and User Functions
+
+def is_user_in_db(user_info):
+    """Check if a user is already in the database."""
+    # Extract relevant info from user_info
+    email = user_info["email"]
+
+    # Check if the user is in the database
+    connection, cursor = get_db_connection_and_cursor()
+    cursor.execute("""
+        SELECT * FROM users
+        WHERE email = %(email)s
+        """, {
+            "email": email
+    })
+    user = cursor.fetchone()
+    # Close communication with the database
+    cursor.close()
+    connection.close()
+    return user is not None
+
+
+def get_user_id_from_email(email):
+    """Get the user id from the email."""
+    connection, cursor = get_db_connection_and_cursor()
+    cursor.execute("""
+        SELECT id FROM users
+        WHERE email = %(email)s
+        """, {
+            "email": email
+    })
+    user_id = cursor.fetchone()[0]
+    # Close communication with the database
+    cursor.close()
+    connection.close()
+    return user_id
+
+def insert_user_into_db(user_info):
+    """Insert user info into the database, if they're not already inside the DB."""
+    # Extract relevant info from user_info
+    email = user_info["email"]
+
+    if is_user_in_db(user_info):
+        return
+
+    # Insert the user info into the database
+    connection, cursor = get_db_connection_and_cursor()
+    cursor.execute("""
+        INSERT INTO users (email)
+        VALUES (%(email)s)
+        """, {
+            "email": email
+    })
+
+    # Make the changes to the database persistent
+    connection.commit()
+    # Close communication with the database
+    cursor.close()
+    connection.close()
+
+
+def insert_message_into_db(message_info):
+    """Insert message info into the database."""
+    # Extract relevant info from message_info
+    email = message_info["email"]
+    sent_from_user = message_info["sent_from_user"]
+    content = message_info["content"]
+    product_ids = message_info["product_ids"]
+    user_id = get_user_id_from_email(email)
+
+    # Insert the message info into the database
+    connection, cursor = get_db_connection_and_cursor()
+    cursor.execute("""
+        INSERT INTO messages (user_id, content, product_ids, sent_from_user)
+        VALUES (%(user_id)s, %(content)s, %(product_ids)s, %(sent_from_user)s)
+        """, {
+            "user_id": user_id,
+            "content": content,
+            "product_ids": product_ids,
+            "sent_from_user": sent_from_user
+    })
+
+    # Make the changes to the database persistent
+    connection.commit()
+    # Close communication with the database
+    cursor.close()
+    connection.close()
+
+
+def get_all_messages_for_user(email, limit=8):
+    """Get all messages for a user."""
+    # Get the user id from the email
+    user_id = get_user_id_from_email(email)
+
+    # Get all messages for the user
+    connection, cursor = get_db_connection_and_cursor()
+    cursor.execute("""
+        SELECT 
+            user_id, product_ids, content, sent_from_user
+        FROM messages
+        WHERE user_id = %(user_id)s
+        LIMIT %(limit)s
+        """, {
+            "user_id": user_id,
+            "limit": limit
+    })
+    messages = cursor.fetchall()
+    # Close communication with the database
+    cursor.close()
+    connection.close()
+    output_messages = []
+    for message in messages:
+        output_messages.append({
+            "user_id": message[0],
+            "product_ids": message[1],
+            "content": message[2],
+            "sent_from_user": message[3]
+        })
+    return output_messages

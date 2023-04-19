@@ -10,3 +10,7 @@ The server url for uploading data is at `https://y41pim9ut5.execute-api.us-west-
 - Supabase: Get it set up with credentials and a few tables
 - Zappa: Get it hosted somewhere
 - Make the frontend support chats with multiple messages
+
+
+## Appendix
+- "client_id": "258654283607-0m8k8l6ghs5mo0pgr6bffrhrfsm407dt.apps.googleusercontent.com",

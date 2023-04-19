@@ -1,4 +1,77 @@
+let userEmail = "";
+
+function getEmail(callback) {
+  console.log('Getting user email...');
+  chrome.identity.getAuthToken({ interactive: true, scopes: ['openid', 'email', 'profile'] }, (token) => {
+    if (chrome.runtime.lastError) {
+      console.log(chrome.runtime.lastError.message);
+      callback(null);
+    } else {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', 'https://people.googleapis.com/v1/people/me?personFields=emailAddresses&access_token=' + token);
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const user_info = JSON.parse(xhr.responseText);
+          if (user_info.emailAddresses && user_info.emailAddresses.length > 0) {
+            callback(user_info.emailAddresses[0].value);
+          } else {
+            console.log('No email addresses found.');
+            callback(null);
+          }
+        } else {
+          console.log(xhr.status, xhr.responseText);
+          callback(null);
+        }
+      };
+      xhr.send();
+    }
+  });
+}
+
+function storeUserEmail(email) {
+  const backendServerURL = 'http://127.0.0.1:5000/insert_user_into_db';
+  const requestData = {
+    email: email
+  };
+
+  fetch(backendServerURL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestData)
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        console.error('Error storing user email:', data.error);
+      } else {
+        console.log('User email stored successfully:', data);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+}
+
+function createMessageElement(text, className) {
+  const messageElement = document.createElement('div');
+  messageElement.classList.add(className);
+  messageElement.innerHTML = text;
+  return messageElement;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  getEmail((email) => {
+    if (email) {
+      userEmail = email;
+      console.log('User email:', email);
+      // Insert the user email into the database
+      storeUserEmail(email);
+    } else {
+      console.log('Failed to get user email');
+    }
+  });
   const chatForm = document.getElementById('chatForm');
   chatForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -10,7 +83,8 @@ function sendPostRequest() {
   const backendServerURL = 'http://127.0.0.1:5000/post';
   const inputData = document.getElementById('inputData').value;
   const requestData = {
-    message: inputData
+    message: inputData,
+    email: userEmail
   };
 
   // Add typing indicator
