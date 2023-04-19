@@ -1,7 +1,7 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'sendPostRequest') {
       const { backendServerURL, requestData } = message;
-  
+      console.log("backendServerURL:", backendServerURL)
       fetch(backendServerURL, {
         method: 'POST',
         headers: {

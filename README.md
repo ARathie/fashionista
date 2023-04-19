@@ -6,6 +6,10 @@ Follow the example inside of [server/test_upload_product.py](https://github.com/
 
 The server url for uploading data is at `https://y41pim9ut5.execute-api.us-west-1.amazonaws.com/dev/insert_product_info`.
 
+
+## Running the server
+It's running locally for now, so just use the command `python app.py` to run in the server directory (after sourcing local venv with `source .venv/bin/activate`)
+
 ## TODO List:
 - Supabase: Get it set up with credentials and a few tables
 - Zappa: Get it hosted somewhere

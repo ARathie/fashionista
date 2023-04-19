@@ -29,7 +29,7 @@ function getEmail(callback) {
 }
 
 function storeUserEmail(email) {
-  const backendServerURL = 'http://127.0.0.1:5000/insert_user_into_db';
+  const backendServerURL = 'http://127.0.0.1:5001/insert_user_into_db';
   const requestData = {
     email: email
   };
@@ -80,8 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function sendPostRequest() {
-  const backendServerURL = 'http://127.0.0.1:5000/post';
+  console.log('Sending POST request...')
+  const backendServerURL = 'http://127.0.0.1:5001/post';
   const inputData = document.getElementById('inputData').value;
+  console.log('inputData:', inputData)
+  console.log('email:', userEmail)
   const requestData = {
     message: inputData,
     email: userEmail
@@ -89,6 +92,17 @@ function sendPostRequest() {
 
   // Add typing indicator
   const chatList = document.getElementById('chatList');
+
+  // Send the user message
+  const userMessage = document.createElement('li');
+  userMessage.style.fontWeight = 'bold';
+  userMessage.textContent = `You: ${inputData}`;
+  chatList.appendChild(userMessage);
+
+  // Clear the input field after sending the message
+  document.getElementById('inputData').value = '';
+
+  // Add the typing indicator
   const typingIndicator = document.createElement('li');
   typingIndicator.id = 'typingIndicator';
   const typingImage = document.createElement('img');
@@ -99,13 +113,12 @@ function sendPostRequest() {
   // Scroll to the bottom of the chat history
   document.getElementById('chatHistory').scrollTop = chatList.scrollHeight;
 
+  console.log('inputData:', inputData)
+  console.log('requestData:', requestData)
+
   chrome.runtime.sendMessage(
     { type: 'sendPostRequest', backendServerURL, requestData },
     (response) => {
-      const userMessage = document.createElement('li');
-      userMessage.style.fontWeight = 'bold';
-      userMessage.textContent = `You: ${inputData}`;
-
       const serverMessage = document.createElement('li');
       if (response.error) {
         serverMessage.textContent = 'An error occurred while sending the POST request. Error: ' + response.error;
@@ -141,14 +154,10 @@ function sendPostRequest() {
   
       // Remove typing indicator and add user and server messages
       chatList.removeChild(document.getElementById('typingIndicator'));
-      chatList.appendChild(userMessage);
       chatList.appendChild(serverMessage);
   
       // Scroll to the bottom of the chat history
       document.getElementById('chatHistory').scrollTop = chatList.scrollHeight;
-  
-      // Clear the input field after sending the message
-      document.getElementById('inputData').value = '';
     }
   );
 }
