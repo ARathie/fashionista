@@ -11,7 +11,7 @@
     },
     "content_scripts": [
       {
-        "matches": ["http://*/*", "https://*/*"],
+        "matches": ["*://*.nike.com/*"],
         "js": ["content_script.js"],
         "css": ["styles.css"]
       }

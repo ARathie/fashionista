@@ -107,6 +107,8 @@ function sendPostRequest() {
   typingIndicator.id = 'typingIndicator';
   const typingImage = document.createElement('img');
   typingImage.src = 'typing.gif'; // Replace this with the URL of your typing indicator gif
+  typingImage.width = 60; // Set the width of the gif
+  typingImage.height = 40; // Set the height of the gif
   typingIndicator.appendChild(typingImage);
   chatList.appendChild(typingIndicator);
 

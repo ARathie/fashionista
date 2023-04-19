@@ -11,9 +11,8 @@ The server url for uploading data is at `https://y41pim9ut5.execute-api.us-west-
 It's running locally for now, so just use the command `python app.py` to run in the server directory (after sourcing local venv with `source .venv/bin/activate`)
 
 ## TODO List:
-- Supabase: Get it set up with credentials and a few tables
-- Zappa: Get it hosted somewhere
-- Make the frontend support chats with multiple messages
+- Make it so that it pulls the most recent message state every time the site loads, using their email as their identifier.
+- Make it use the actual backend, not the localhost
 
 
 ## Appendix
