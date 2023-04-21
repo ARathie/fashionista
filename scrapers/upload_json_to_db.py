@@ -39,7 +39,7 @@ def upload_json_file(file_path):
     # Use ThreadPoolExecutor to handle multiple requests concurrently
     with ThreadPoolExecutor() as executor:
         # Create a list to store the future results of upload_product()
-        futures = [executor.submit(upload_product, product) for product in products[2125:]]
+        futures = [executor.submit(upload_product, product) for product in products]
 
         # Iterate through the results as they become available
         for future in as_completed(futures):
@@ -49,7 +49,7 @@ def upload_json_file(file_path):
 
 
 def main():
-    file_path = "./product_data_mens_clothing.json"
+    file_path = "./product_data_accessories.json"
     upload_json_file(file_path)
 
 if __name__ == "__main__":

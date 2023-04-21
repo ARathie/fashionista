@@ -151,9 +151,17 @@ def main():
         # API_URL = "https://api.nike.com/cic/browse/v2?queryid=products&anonymousId=EB468EF69CDC3B9FD8289CB67CF5353D&country=us&endpoint=%2Fproduct_feed%2Frollup_threads%2Fv2%3Ffilter%3Dmarketplace(US)%26filter%3Dlanguage(en)%26filter%3DemployeePrice(true)%26filter%3DattributeIds(a00f0bb2-648b-4853-9559-4cd943b7d6c6%2C0f64ecc7-d624-4e91-b171-b83a03dd8550)%26anchor%3D" + str(curr_num) + "%26consumerChannelId%3Dd9a5bc42-4b9c-4976-858a-f159cf99c647%26count%3D24&language=en&localizedRangeStr=%7BlowestPrice%7D%20%E2%80%94%20%7BhighestPrice%7D"
        
         # Womens clothing
-        API_URL = "https://api.nike.com/cic/browse/v2?queryid=products&anonymousId=EB468EF69CDC3B9FD8289CB67CF5353D&country=us&endpoint=%2Fproduct_feed%2Frollup_threads%2Fv2%3Ffilter%3Dmarketplace(US)%26filter%3Dlanguage(en)%26filter%3DemployeePrice(true)%26filter%3DattributeIds(7baf216c-acc6-4452-9e07-39c2ca77ba32%2Ca00f0bb2-648b-4853-9559-4cd943b7d6c6)%26anchor%3D" + str(curr_num) + "%26consumerChannelId%3Dd9a5bc42-4b9c-4976-858a-f159cf99c647%26count%3D24&language=en&localizedRangeStr=%7BlowestPrice%7D%20%E2%80%94%20%7BhighestPrice%7D"
+        # API_URL = "https://api.nike.com/cic/browse/v2?queryid=products&anonymousId=EB468EF69CDC3B9FD8289CB67CF5353D&country=us&endpoint=%2Fproduct_feed%2Frollup_threads%2Fv2%3Ffilter%3Dmarketplace(US)%26filter%3Dlanguage(en)%26filter%3DemployeePrice(true)%26filter%3DattributeIds(7baf216c-acc6-4452-9e07-39c2ca77ba32%2Ca00f0bb2-648b-4853-9559-4cd943b7d6c6)%26anchor%3D" + str(curr_num) + "%26consumerChannelId%3Dd9a5bc42-4b9c-4976-858a-f159cf99c647%26count%3D24&language=en&localizedRangeStr=%7BlowestPrice%7D%20%E2%80%94%20%7BhighestPrice%7D"
         
+        # Mens shoes
+        # API_URL = "https://api.nike.com/cic/browse/v2?queryid=products&anonymousId=EB468EF69CDC3B9FD8289CB67CF5353D&country=us&endpoint=%2Fproduct_feed%2Frollup_threads%2Fv2%3Ffilter%3Dmarketplace(US)%26filter%3Dlanguage(en)%26filter%3DemployeePrice(true)%26filter%3DattributeIds(16633190-45e5-4830-a068-232ac7aea82c%2C0f64ecc7-d624-4e91-b171-b83a03dd8550)%26anchor%3D" + str(curr_num) + "%26consumerChannelId%3Dd9a5bc42-4b9c-4976-858a-f159cf99c647%26count%3D24&language=en&localizedRangeStr=%7BlowestPrice%7D%20%E2%80%94%20%7BhighestPrice%7D"
         
+        # Womens shoes
+        # API_URL = "https://api.nike.com/cic/browse/v2?queryid=products&anonymousId=EB468EF69CDC3B9FD8289CB67CF5353D&country=us&endpoint=%2Fproduct_feed%2Frollup_threads%2Fv2%3Ffilter%3Dmarketplace(US)%26filter%3Dlanguage(en)%26filter%3DemployeePrice(true)%26filter%3DattributeIds(7baf216c-acc6-4452-9e07-39c2ca77ba32%2C16633190-45e5-4830-a068-232ac7aea82c)%26anchor%3D" + str(curr_num) + "%26consumerChannelId%3Dd9a5bc42-4b9c-4976-858a-f159cf99c647%26count%3D24&language=en&localizedRangeStr=%7BlowestPrice%7D%20%E2%80%94%20%7BhighestPrice%7D"
+        
+        # All accessories
+        API_URL = "https://api.nike.com/cic/browse/v2?queryid=products&anonymousId=EB468EF69CDC3B9FD8289CB67CF5353D&country=us&endpoint=%2Fproduct_feed%2Frollup_threads%2Fv2%3Ffilter%3Dmarketplace(US)%26filter%3Dlanguage(en)%26filter%3DemployeePrice(true)%26filter%3DattributeIds(fa863563-4508-416d-bae9-a53188c04937)%26anchor%3D" + str(curr_num) + "%26consumerChannelId%3Dd9a5bc42-4b9c-4976-858a-f159cf99c647%26count%3D24&language=en&localizedRangeStr=%7BlowestPrice%7D%20%E2%80%94%20%7BhighestPrice%7D"
+
         # Fetch data from API
         response = requests.get(API_URL, headers=HEADERS)
         if response.status_code != 200:
@@ -181,14 +189,14 @@ def main():
 
         
 
-
+        # OPTIMIZED FASTER METHOD
         with ThreadPoolExecutor(max_workers=30) as executor:
         # Use executor.submit() with partial to pass multiple arguments
             futures = []
             
             for product in products:
-                print("num products processed (roughly): " + str(num_products_processed))
                 num_products_processed += 1
+                print("num products processed (roughly): " + str(num_products_processed))
                 for colorway in product['colorways']:
                     future = executor.submit(get_product_details, colorway, product)
                     futures.append(future)
@@ -201,7 +209,7 @@ def main():
                     print("num colorways processed: " + str(num_colorways_processed))
 
 
-        
+        # SLOW METHOD
         # for product in products:
         #     for colorway in product['colorways']:
         #         product_details = get_product_details(colorway, product)
@@ -210,7 +218,7 @@ def main():
         #         print(num_products_processed)
 
         curr_num = curr_num + 24
-        if curr_num > 2794: # if you want to limit the number of products
+        if curr_num > 1000: # !! MAKE SURE TO CHANGE THIS TO MATCH THE NUMBER OF PRODUCTS IN THE CATEGORY (the less dumb ways dont work)
              break
 
         # if len(all_product_details) >= 6221:
@@ -228,7 +236,7 @@ def main():
     #         print(f"Unexpected item: {item}")
 
 
-    with open('product_data_womens_clothing.json', 'w') as outfile:
+    with open('product_data_accessories.json', 'w') as outfile:
             json.dump(all_product_details, outfile, indent=4)
 
 if __name__ == "__main__":
