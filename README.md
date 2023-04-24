@@ -11,9 +11,17 @@ The server url for uploading data is at `https://y41pim9ut5.execute-api.us-west-
 It's running locally for now, so just use the command `python app.py` to run in the server directory (after sourcing local venv with `source .venv/bin/activate`)
 
 ## TODO List:
-- Make it so that it pulls the most recent message state every time the site loads, using their email as their identifier.
 - Make it use the actual backend, not the localhost
+- Inserting products should also classify the following attributes:
+  - category: one of ['top', 'bottom', 'outerwear', 'dress', 'swimwear', 'underwear', 'sleepwear', 'accessory', 'footwear']
+  - color: one of ['red', 'green', 'blue', 'black', 'brown', 'grey', 'yellow', 'purple', 'white', 'pink', 'orange']
+  - gender: one of ['men', 'women']
+  - material: one of ['cotton', 'silk', 'wool', 'linen', 'polyester', 'nylon', 'rayon', 'acrylic', 'spandex', 'leather', 'knit']
+- Adjust the prompt to output these categories
+- Adjust the query to filter based on these categories
+- Add validation to the outputs
 
+- 
 
 ## Appendix
 - "client_id": "258654283607-0m8k8l6ghs5mo0pgr6bffrhrfsm407dt.apps.googleusercontent.com",

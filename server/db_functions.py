@@ -27,21 +27,27 @@ def find_similar_products(embeddable_text, num_closest_products=3):
     # Get the embedding for the text
     embedding = openai_utils.openai_embedding(embeddable_text)
 
-    # Get all products from the database
-    all_products = get_all_products()
-
-    # Calculate the similarities between the embedding and all products
-    products_to_return = []
-    for product in all_products:
-        product_embedding = product[3]
-        distance = openai_utils.cosine_similarity(embedding, product_embedding)
-        products_to_return.append((list(product) + [distance]))
+    # New: use pgvector to find the most similar products
+    connection, cursor = get_db_connection_and_cursor()
+    cursor.execute("""
+        SELECT id, created_at, description, product_embedding, tags, name, price, url, image_urls, product_embedding <-> CAST(%(embedding)s AS vector) AS distance
+        FROM product_info
+        ORDER BY distance ASC
+        LIMIT %(num_closest_products)s
+        """, {
+            "embedding": embedding,
+            "num_closest_products": num_closest_products
+        })
     
-    # Sort the products by similarity
-    products_to_return.sort(key=lambda x: x[8], reverse=True)
+    # Get the products from the database
+    products = cursor.fetchall()
 
-    # Return the top num_closest_products products
-    return products_to_return[:num_closest_products]
+    # Close communication with the database
+    cursor.close()
+    connection.close()
+
+    # Return the products
+    return products
 
 
 def insert_product_info_into_db(product_info):
@@ -181,6 +187,7 @@ def get_all_messages_for_user(email, limit=8):
             user_id, product_ids, content, sent_from_user
         FROM messages
         WHERE user_id = %(user_id)s
+        ORDER BY created_at DESC
         LIMIT %(limit)s
         """, {
             "user_id": user_id,
