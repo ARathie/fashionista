@@ -79,23 +79,15 @@ from concurrent.futures import ThreadPoolExecutor
 def get_product_details(colorway, product):
 
     try:
-        # print(type(colorway))
-        # print(colorway)
         product_url = "https://nike.com" + colorway['pdpUrl'][13:]
 
         response = requests.get(product_url)
         product_soup = BeautifulSoup(response.text, 'html.parser')
 
-        # if 'colorways' not in item.keys():
-        #     print('no coloways')
-
-        # num_colorways = len(product['colorways'])
-
         product_price = colorway['price']['currentPrice']
 
         
         product_name = product['title'] + " " + product['subtitle']
-        # product_description = colorway['colorDescription'] + '. ' + product['productContent']['fullDescription']
 
         
 
@@ -113,7 +105,6 @@ def get_product_details(colorway, product):
         product_image_urls = [colorway['images']['portraitURL']] # only one image, try beautiful soup strategy to get more
         # product_image_urls = product_soup.find('img', {'data-fade-in'="css-147n82m"}).text
 
-        # Change to the pid of each individual colorway
         product_tags = []
 
 
@@ -124,7 +115,6 @@ def get_product_details(colorway, product):
             'image_urls': product_image_urls,
             'tags': product_tags,
             'url': product_url,
-            # 'description': product_description
         }
     except Exception as e:
         print(f"Error processing product {product['title']}")
@@ -132,7 +122,6 @@ def get_product_details(colorway, product):
 
     
 def main():
-    # API_URL = "https://api.nike.com/product_feed/threads/v2?anchor=0&count=24&filter=marketplace%28US%29&filter=language%28en%29&filter=employeePrice%28true%29&filter=attributeIds%28010794e7-2158-4a49-a2b2-3a3e5c3a5b5a%29&consumerChannelId=d9a5bc42-4b9c-4976-858a-f159cf99c647"
     curr_num = 0 # this is the current number of products populated on the nike page. We must iterate this in the API_URL
     HEADERS = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
@@ -223,17 +212,6 @@ def main():
 
         # if len(all_product_details) >= 6221:
         #     break
-
-
-
-
-    # Process the product data
-    # for item in items['products']:
-    #     if isinstance(item, dict) and 'url' in item:
-    #         product_details = get_product_details(item)
-    #         all_product_details.append(product_details)
-    #     else:
-    #         print(f"Unexpected item: {item}")
 
 
     with open('product_data_accessories.json', 'w') as outfile:
