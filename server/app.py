@@ -4,6 +4,7 @@ from flask import Flask, jsonify, request
 import db_functions
 import time, json
 import openai_utils
+from infer_product_category import allowed_categories, allowed_colors, allowed_genders
 
 
 app = Flask(__name__)
@@ -36,12 +37,39 @@ def format_messages_with_starter_prompt(messages):
     messages_to_send = []
     messages_to_send.append({
         "role": "user",
-        "content": """You are a fashion concierge, who is helping someone on Zara.com buy products from their website. The user will give you a description of the type of outfit that they would like to be wearing, and you will return a JSON object containing an "outfit_pieces" key, which is an object containing multiple outfit pieces (like "top: <shirt_description>, bottom: <pants_description>", etc), along with a “rationale” key stored inside the JSON object. This rationale will address why the various pieces fit together with each other and how they fit in with what the user asked for, and will be returned directly to the user in a chat window so it should be conversational in nature. Please output only this JSON object, and when you are producing the JSON object, please produce the “rationale” key first. In later parts of the conversation, you will update the outfit based on user feedback. Additionally, be relatively descriptive with your returned product descriptions. The conversation will now begin, and remember, each time you respond, you will respond with correctly formatted JSON."""
+        # "content": """You are a fashion concierge, who is helping advise someone on purchasing an outfit from an online shopping website. The user will give you a description of the type of outfit that they would like to be wearing, and you will return a JSON object containing an "outfit_pieces" key, which is an object containing multiple outfit pieces (like "top: <shirt_description>, bottom: <pants_description>", etc), along with a “rationale” key stored inside the JSON object. This rationale will address why the various pieces fit together with each other and how they fit in with what the user asked for, and will be returned directly to the user in a chat window so it should be conversational in nature. Please output only this JSON object, and when you are producing the JSON object, please produce the “rationale” key first. In later parts of the conversation, you will update the outfit based on user feedback. Additionally, be relatively descriptive with your returned product descriptions. The conversation will now begin, and remember, each time you respond, you will respond with correctly formatted JSON."""
+        "content": f"""You are a fashion concierge, who is helping advise someone on purchasing an outfit from an online shopping website. The user will give you a description of the type of outfit that they would like to be wearing, and you will return a JSON object containing an "outfit_pieces" key, which is an object containing multiple outfit pieces (like "top: <shirt_description>, bottom: <pants_description>", etc), along with a “rationale” key stored inside the JSON object. This rationale will address why the various pieces fit together with each other and how they fit in with what the user asked for, and will be returned directly to the user in a chat window so it should be conversational in nature. In later parts of the conversation, you will update the outfit based on user feedback. Additionally, be relatively descriptive with your returned product descriptions. The conversation will now begin, and remember, each time you respond, you will respond with correctly formatted JSON.
+
+Please return a JSON object with the following format, in the following order:
+{{
+  "rationale": <rationale for the output>,
+  "outfit_pieces": {{
+    <clothing_type>: {{
+      "description": <descriptive description of the piece of clothing>,
+      "colors": [<colors of the piece of clothing>],
+      "gender": <gender that it's for>
+    }}
+  }}
+}}
+
+Rules:
+- the outfit_pieces can only contain the following categories as keys: {allowed_categories}.
+- when choosing colors, you can only recommend colors from the following: {allowed_colors}. Please recommend multiple colors that would work.
+- when specifying the gender, you can only use the following: {allowed_genders}"""
     })
     for message in messages:
+        if message["sent_from_user"]:
+            role = "user"
+            message_content = f"User Query: {message['content']}\n\nJSON Output:"
+            print(f"User Query: {message['content']}")
+        else:
+            role = "assistant"
+            message_content = message['content']
+            print(f"Assistant Response: {message_content}")
+        
         messages_to_send.append({
-            "role": "user" if message["sent_from_user"] else "assistant",
-            "content": message["content"] # Add product's mentioned here in the message
+            "role": role,
+            "content": message_content
         })
     return messages_to_send
 
@@ -55,14 +83,6 @@ def post():
     email = request_data.get('email')
     if message is None:
         return jsonify(error="message field is required"), 400
-    
-    # Use the email to get the user's previous messages, and use that to generate a response
-    user_messages = db_functions.get_all_messages_for_user(email)
-
-    # Generate a response using OpenAI
-    # if len(user_messages) == 0:
-    #     prompt = f"""You are a fashion concierge, who is helping someone on Zara.com buy products from their website. The user will give you a description of the type of outfit that they would like to be wearing, and you will return a JSON object containing an "outfit_pieces" key, which is an object containing multiple outfit pieces (like "top: <shirt_description>, bottom: <pants_description>", etc), along with a “rationale” key stored inside the JSON object. This rationale will address why the various pieces fit together with each other and how they fit in with what the user asked for, and will be returned directly to the user in a chat window so it should be conversational in nature. Please output only this JSON object, and when you are producing the JSON object, please produce the “rationale” key first. In later parts of the conversation, you will update the outfit based on user feedback. Additionally, be relatively descriptive with your returned product descriptions.\n\nUser Query: {message} \n\nJSON Output:"""
-    #     response = openai_utils.openai_response(prompt)
 
     # Insert the user's message into the database
     user_message_info = {
@@ -72,8 +92,13 @@ def post():
         "product_ids": []
     }
     db_functions.insert_message_into_db(user_message_info)
+
+    # Use the email to get the user's previous messages, and use that to generate a response
+    user_messages = db_functions.get_all_messages_for_user(email)
     
+    # Format the messages into a format that OpenAI can understand
     messages = format_messages_with_starter_prompt(user_messages)
+    print("Formatted messages: ", messages)
     response = openai_utils.openai_response_multiple_messages(messages)
 
     try:
@@ -93,12 +118,35 @@ def post():
         for piece_type in outfit_pieces.keys():
             # Search through the database for the products that match the outfit pieces
             print("Searching for products that match the outfit pieces")
-            piece_description = outfit_pieces[piece_type]
-            similar_products = db_functions.find_similar_products(f"Type: {piece_type}; Description: {piece_description}", num_closest_products=1)
+            outfit_piece = outfit_pieces[piece_type]
+            piece_description = outfit_piece["description"]
+            gender = outfit_piece["gender"]
+            colors = outfit_piece["colors"]
+
+            similar_products = db_functions.find_similar_products(f"Type: {piece_type}; Description: {piece_description}", piece_type, gender, num_closest_products=3)
 
             # Get the first product from the list of similar products
             print("Got similar products: ", similar_products)
-            product = similar_products[0]
+            formatted_similar_product_strings = [f"[{index}] Name: {product[5]}, Description: {product[2]}" for index, product in enumerate(similar_products)]
+
+            # Use OpenAI to take in the descriptions and names of the products that were returned, along with the high-level rationale for the outfit + the product description that was used to search for the products, and return which product should be chosen of the ones that were returned
+            newline = '\n'
+            prompt = f"""You are a quality control AI, and your job is to select which product description is closest to the provided description and best fits in with the outfit described in the rationale.
+
+Outfit description / rationale: {rationale}
+Product description: {piece_description}
+The products that you are choosing between are:
+{newline.join(formatted_similar_product_strings)}.
+
+Which product most closely matches the outfit description / product description? Return only a number {[i for i in range(len(formatted_similar_product_strings))]}:"""
+            print("About to get response from OpenAI")
+            response = openai_utils.openai_response(prompt)
+            print("Got response from OpenAI: ", response)
+            # Get the index of the product that was chosen
+            product_index = int(response)
+            print("Got product index: ", product_index)
+            # Get the product that was chosen
+            product = similar_products[product_index]
 
             # Get the product name, description, tags, and other info
             # TODO: Make this not based on index; should be based on name

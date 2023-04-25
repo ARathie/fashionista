@@ -1,5 +1,7 @@
 import psycopg2
 import openai_utils
+from openai_utils import openai_response
+import json
 
 def get_db_connection_and_cursor():
     """Get a connection and cursor to the database."""
@@ -22,7 +24,7 @@ def get_all_products():
     return products
 
 
-def find_similar_products(embeddable_text, num_closest_products=3):
+def find_similar_products(embeddable_text, category, gender, num_closest_products=3):
     """Use embedding similarity search, via cosine distance, to find the most similar products"""
     # Get the embedding for the text
     embedding = openai_utils.openai_embedding(embeddable_text)
@@ -32,10 +34,13 @@ def find_similar_products(embeddable_text, num_closest_products=3):
     cursor.execute("""
         SELECT id, created_at, description, product_embedding, tags, name, price, url, image_urls, product_embedding <-> CAST(%(embedding)s AS vector) AS distance
         FROM product_info
+        WHERE category = %(category)s AND (gender = %(gender)s OR gender = 'unisex')
         ORDER BY distance ASC
         LIMIT %(num_closest_products)s
         """, {
             "embedding": embedding,
+            "category": category,
+            "gender": gender,
             "num_closest_products": num_closest_products
         })
     
@@ -206,3 +211,67 @@ def get_all_messages_for_user(email, limit=8):
             "sent_from_user": message[3]
         })
     return output_messages
+
+
+def update_product_category_colors_and_gender(product_id, category, colors, gender):
+    """Update the product category, colors, and gender"""
+    # Update the product info in the database
+    connection, cursor = get_db_connection_and_cursor()
+    cursor.execute("""
+        UPDATE product_info
+        SET category = %(category)s, colors = %(colors)s, gender = %(gender)s
+        WHERE id = %(product_id)s
+        """, {
+            "product_id": product_id,
+            "category": category,
+            "colors": colors,
+            "gender": gender
+    })
+
+    # Make the changes to the database persistent
+    connection.commit()
+    # Close communication with the database
+    cursor.close()
+    connection.close()
+
+
+def get_uncategorized_products_from_db(limit=10, bias_towards_prompt=None):
+    """Pull randomly ordered products that don't have a category from the database."""
+    connection, cursor = get_db_connection_and_cursor()
+    if bias_towards_prompt is None:
+        # In this case, we don't want to bias towards any prompt.
+        cursor.execute("""
+            SELECT id, name, description, tags FROM product_info
+            WHERE category IS NULL
+            ORDER BY RANDOM()
+            LIMIT %(limit)s
+            """, { "limit": limit })
+    else:
+        # In this case, we want to bias towards the prompt that was given.
+        # Get the OpenAI embedding of the bias_towards_prompt
+        bias_towards_embedding = openai_utils.openai_embedding(bias_towards_prompt)
+
+        # Get the tags of all the products in the database, ordered by how similar they are to the bias_towards_prompt (using '<->' operator)
+        cursor.execute("""
+            SELECT id, name, description, tags FROM product_info
+            WHERE category IS NULL
+            ORDER BY product_embedding <-> CAST(%(bias_towards)s AS vector) ASC
+            LIMIT %(limit)s
+            """, { "limit": limit, "bias_towards": bias_towards_embedding })
+        
+    uncategorized_products = cursor.fetchall()
+    # Close communication with the database
+    cursor.close()
+    connection.close()
+    output_products = []
+    for product in uncategorized_products:
+        output_products.append({
+            "id": product[0],
+            "name": product[1],
+            "description": product[2],
+            "tags": product[3]
+        })
+    return output_products
+
+
+
