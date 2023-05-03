@@ -49,7 +49,7 @@ def upload_json_file(file_path):
 
 
 def main():
-    file_path = "./product_data_accessories.json"
+    file_path = "./nike_products/product_data_accessories.json"
     upload_json_file(file_path)
 
 if __name__ == "__main__":
