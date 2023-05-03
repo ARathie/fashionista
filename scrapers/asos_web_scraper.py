@@ -76,41 +76,47 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 
-def get_product_details(colorway, product):
+def get_product_details(product):
+    HEADERS = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+    }
 
     try:
-        product_url = "https://nike.com" + colorway['pdpUrl'][13:]
 
-        response = requests.get(product_url)
+
+        product_url = "https://asos.com/us/" + product['url']
+        product_price = product['price']['current']['value']
+        product_name = product['name']
+
+        response = requests.get(product_url, headers=HEADERS)
         product_soup = BeautifulSoup(response.text, 'html.parser')
+        product_color = product['colour']
 
-        product_price = colorway['price']['currentPrice']
-
-        
-        product_name = product['title'] + " " + product['subtitle']
-
-        
-
-        product_description_div = product_soup.find('div', {'class': 'description-preview body-2 css-1pbvugb'})
+        product_description_div = product_soup.find('div', {'id': 'productDescriptionDetails'})
         if product_description_div:
-            product_description = colorway['colorDescription'] + ". " + product_description_div.find('p').text
+            product_description_bullets_lis = product_description_div.find('ul').findAll('li')
+            product_description = ''
+            for bullet in product_description_bullets_lis:
+                product_description = product_description + bullet.text + ". "
         else:
-            product_description = colorway['colorDescription'] + ". " + "[No description available]"
+            product_description = "[No description available]"
             # num_products_description_error += 1
             # print("error finding product description. num products with description error: " + str(num_products_description_error))
             
             
 
-
-        product_image_urls = [colorway['images']['portraitURL']] # only one image, try beautiful soup strategy to get more
+        product_image_urls = [product['imageUrl']]
+        product_image_urls.extend(product['additionalImageUrls'])
         # product_image_urls = product_soup.find('img', {'data-fade-in'="css-147n82m"}).text
 
         product_tags = []
 
 
         return {
+            'store_name': 'asos',
             'price': product_price,
             'name': product_name,
+            'raw_color': product_color,
             'description': product_description,
             'image_urls': product_image_urls,
             'tags': product_tags,
@@ -123,9 +129,7 @@ def get_product_details(colorway, product):
     
 def main():
     curr_num = 0 # this is the current number of products populated on the nike page. We must iterate this in the API_URL
-    HEADERS = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-    }
+    
     all_product_details = []
 
     # num_products_description_error = 0
@@ -136,23 +140,11 @@ def main():
     # active_api = True
     while True:
 
-        # Mens clothing
-        # API_URL = "https://api.nike.com/cic/browse/v2?queryid=products&anonymousId=EB468EF69CDC3B9FD8289CB67CF5353D&country=us&endpoint=%2Fproduct_feed%2Frollup_threads%2Fv2%3Ffilter%3Dmarketplace(US)%26filter%3Dlanguage(en)%26filter%3DemployeePrice(true)%26filter%3DattributeIds(a00f0bb2-648b-4853-9559-4cd943b7d6c6%2C0f64ecc7-d624-4e91-b171-b83a03dd8550)%26anchor%3D" + str(curr_num) + "%26consumerChannelId%3Dd9a5bc42-4b9c-4976-858a-f159cf99c647%26count%3D24&language=en&localizedRangeStr=%7BlowestPrice%7D%20%E2%80%94%20%7BhighestPrice%7D"
-       
-        # Womens clothing
-        # API_URL = "https://api.nike.com/cic/browse/v2?queryid=products&anonymousId=EB468EF69CDC3B9FD8289CB67CF5353D&country=us&endpoint=%2Fproduct_feed%2Frollup_threads%2Fv2%3Ffilter%3Dmarketplace(US)%26filter%3Dlanguage(en)%26filter%3DemployeePrice(true)%26filter%3DattributeIds(7baf216c-acc6-4452-9e07-39c2ca77ba32%2Ca00f0bb2-648b-4853-9559-4cd943b7d6c6)%26anchor%3D" + str(curr_num) + "%26consumerChannelId%3Dd9a5bc42-4b9c-4976-858a-f159cf99c647%26count%3D24&language=en&localizedRangeStr=%7BlowestPrice%7D%20%E2%80%94%20%7BhighestPrice%7D"
-        
-        # Mens shoes
-        # API_URL = "https://api.nike.com/cic/browse/v2?queryid=products&anonymousId=EB468EF69CDC3B9FD8289CB67CF5353D&country=us&endpoint=%2Fproduct_feed%2Frollup_threads%2Fv2%3Ffilter%3Dmarketplace(US)%26filter%3Dlanguage(en)%26filter%3DemployeePrice(true)%26filter%3DattributeIds(16633190-45e5-4830-a068-232ac7aea82c%2C0f64ecc7-d624-4e91-b171-b83a03dd8550)%26anchor%3D" + str(curr_num) + "%26consumerChannelId%3Dd9a5bc42-4b9c-4976-858a-f159cf99c647%26count%3D24&language=en&localizedRangeStr=%7BlowestPrice%7D%20%E2%80%94%20%7BhighestPrice%7D"
-        
-        # Womens shoes
-        # API_URL = "https://api.nike.com/cic/browse/v2?queryid=products&anonymousId=EB468EF69CDC3B9FD8289CB67CF5353D&country=us&endpoint=%2Fproduct_feed%2Frollup_threads%2Fv2%3Ffilter%3Dmarketplace(US)%26filter%3Dlanguage(en)%26filter%3DemployeePrice(true)%26filter%3DattributeIds(7baf216c-acc6-4452-9e07-39c2ca77ba32%2C16633190-45e5-4830-a068-232ac7aea82c)%26anchor%3D" + str(curr_num) + "%26consumerChannelId%3Dd9a5bc42-4b9c-4976-858a-f159cf99c647%26count%3D24&language=en&localizedRangeStr=%7BlowestPrice%7D%20%E2%80%94%20%7BhighestPrice%7D"
-        
-        # All accessories
-        API_URL = "https://api.nike.com/cic/browse/v2?queryid=products&anonymousId=EB468EF69CDC3B9FD8289CB67CF5353D&country=us&endpoint=%2Fproduct_feed%2Frollup_threads%2Fv2%3Ffilter%3Dmarketplace(US)%26filter%3Dlanguage(en)%26filter%3DemployeePrice(true)%26filter%3DattributeIds(fa863563-4508-416d-bae9-a53188c04937)%26anchor%3D" + str(curr_num) + "%26consumerChannelId%3Dd9a5bc42-4b9c-4976-858a-f159cf99c647%26count%3D24&language=en&localizedRangeStr=%7BlowestPrice%7D%20%E2%80%94%20%7BhighestPrice%7D"
+        # Mens CTAS (call to actions)
+        API_URL = "https://www.asos.com/api/product/search/v2/categories/24920?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
 
         # Fetch data from API
-        response = requests.get(API_URL, headers=HEADERS)
+        response = requests.get(API_URL)
         if response.status_code != 200:
             print(f"Error fetching data from API: {response.status_code}")
             # active_api = False # When we run out of products, this will turn false because the API_URL will be invalid
@@ -160,21 +152,13 @@ def main():
 
         api_data = response.json()
 
-        data = api_data['data']
+        products = api_data['products']
 
-
-        products_wrapper = data['products']
-        products = products_wrapper['products']
         if not products: # this will stop the loop when we run out of products
             # active_api = False
-            curr_num = curr_num + 24
+            curr_num = curr_num + 200
             continue
-        print(len(products))
-        temp = 0
-        for product in products:
-             for colorway in product['colorways']:
-                  temp += 1
-        print(temp)
+        # print(len(products))
 
         
 
@@ -184,37 +168,33 @@ def main():
             futures = []
             
             for product in products:
-                num_products_processed += 1
-                print("num products processed (roughly): " + str(num_products_processed))
-                for colorway in product['colorways']:
-                    future = executor.submit(get_product_details, colorway, product)
-                    futures.append(future)
+                future = executor.submit(get_product_details, product)
+                futures.append(future)
                     
             for future in futures:
                 product_details = future.result()
                 if product_details is not None:
                     all_product_details.append(product_details)
-                    num_colorways_processed += 1
-                    print("num colorways processed: " + str(num_colorways_processed))
+                    num_products_processed += 1
+                    print("num products processed: " + str(num_products_processed))
 
 
         # SLOW METHOD
         # for product in products:
-        #     for colorway in product['colorways']:
-        #         product_details = get_product_details(colorway, product)
-        #         all_product_details.append(product_details)
-        #         num_products_processed +=1
-        #         print(num_products_processed)
+        #     product_details = get_product_details(product)
+        #     all_product_details.append(product_details)
+        #     num_products_processed +=1
+        #     print(num_products_processed)
 
-        curr_num = curr_num + 24
-        if curr_num > 1000: # !! MAKE SURE TO CHANGE THIS TO MATCH THE NUMBER OF PRODUCTS IN THE CATEGORY (the less dumb ways dont work)
+        curr_num = curr_num + 200
+        if curr_num > 0: # !! MAKE SURE TO CHANGE THIS TO MATCH THE NUMBER OF PRODUCTS IN THE CATEGORY (the less dumb ways dont work)
              break
 
         # if len(all_product_details) >= 6221:
         #     break
 
 
-    with open('product_data_accessories.json', 'w') as outfile:
+    with open('./asos_products/product_data_mens_CTAS.json', 'w') as outfile:
             json.dump(all_product_details, outfile, indent=4)
 
 if __name__ == "__main__":
