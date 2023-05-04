@@ -165,8 +165,7 @@ def main():
 
         products_wrapper = data['products']
         products = products_wrapper['products']
-        if not products: # this will stop the loop when we run out of products
-            # active_api = False
+        if not products: # must be done this way because Nike's API will sometimes return an empty response -- seemingly random
             curr_num = curr_num + 24
             continue
         print(len(products))

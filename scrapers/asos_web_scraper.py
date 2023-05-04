@@ -1,70 +1,9 @@
-# import requests
-# import time
-# from bs4 import BeautifulSoup
-# import json
-# from selenium import webdriver
-# from selenium.webdriver.common.keys import Keys
-# from webdriver_manager.chrome import ChromeDriverManager
-# from selenium.webdriver.common.by import By
-
-# # Replace 'example.com' with the URL of the clothing brand's website
-# URL = 'https://www.nike.com/w/mens-clothing-6ymx6znik1'
-
-# def get_product_details(product_url):
-    # response = requests.get(URL)
-    # soup = BeautifulSoup(response.text, 'html.parser')
-
-    # product_name = product_soup.find('h1', {'id': 'pdp_product_title'}).text
-#     product_id = product_soup.find('li', {'class': 'description-preview__style-color ncss-li'}).text
-    # product_description_div = product_soup.find('div', {'class': 'description-preview body-2 css-1pbvugb'})
-    # product_description = product_description_div.find('p').text
-
-#     return {
-#         'name': product_name,
-#         'id': product_id,
-#         'link': product_url,
-#         'description': product_description
-#     }
-
-# def scroll_to_load_products(driver, scroll_pause_time=2, max_scrolls=20):
-#     body = driver.find_element(By.TAG_NAME, 'body')
-#     scroll_count = 0
-
-#     while scroll_count < max_scrolls:
-#         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-#         time.sleep(scroll_pause_time)
-#         scroll_count += 1
-
-
-
-# def main():
-#     global driver
-#     driver = webdriver.Chrome(ChromeDriverManager().install())
-#     # driver = webdriver.Chrome('/Users/ash/Developer/projects/fashionista/chromedriver_mac64')  # Update the path to your WebDriver
-#     driver.get(URL)
-
-#     scroll_to_load_products(driver)
-
-    # response = requests.get(URL)
-    # soup = BeautifulSoup(response.text, 'html.parser')
-
-#     products = soup.find_all('a', {'class': 'product-card__link-overlay'})
-#     # products = [product_div.find('a') for product_div in product_divs]
-#     product_links = [product['href'] for product in products]
-
-#     product_data = []
-
-#     for link in product_links:
-#         product_details = get_product_details(link)
-#         product_data.append(product_details)
-
-#     driver.quit()
-
-#     with open('product_data.json', 'w') as outfile:
-#         json.dump(product_data, outfile, indent=4)
-
-# if __name__ == "__main__":
-#     main()
+# BEFORE RUNNING THIS SCRIPT YOU MUST
+# 1) Update the product_category in get_product_details()
+# 2) update gender in get_product_details
+# 3) Update the number of products to cycle through at the end of main()
+# 4) Select the right API_URL
+# 5) Change the outfile name at the bottom
 
 
 import json
@@ -82,7 +21,9 @@ def get_product_details(product):
     }
 
     try:
-
+        allowed_categories = ['top', 'bottom', 'outerwear', 'dress', 'swimwear', 'underwear', 'sleepwear', 'accessory', 'footwear']
+        product_category = 'top' # MAKE SURE TO UPDATE THIS ON EACH RUN
+        product_gender = 'men'
 
         product_url = "https://asos.com/us/" + product['url']
         product_price = product['price']['current']['value']
@@ -102,8 +43,7 @@ def get_product_details(product):
             product_description = "[No description available]"
             # num_products_description_error += 1
             # print("error finding product description. num products with description error: " + str(num_products_description_error))
-            
-            
+        
 
         product_image_urls = [product['imageUrl']]
         product_image_urls.extend(product['additionalImageUrls'])
@@ -121,9 +61,11 @@ def get_product_details(product):
             'image_urls': product_image_urls,
             'tags': product_tags,
             'url': product_url,
+            'category': product_category,
+            'gender': product_gender
         }
     except Exception as e:
-        print(f"Error processing product {product['title']}")
+        print(f"Error processing product {product['name']}")
         return None
 
     
@@ -141,7 +83,44 @@ def main():
     while True:
 
         # Mens CTAS (call to actions)
-        API_URL = "https://www.asos.com/api/product/search/v2/categories/24920?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/24920?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+
+        #Mens Hoodies and Jackets
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/5668?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        
+        # Mens Accessories
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/4210?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        
+        # Mens Sweaters and Cardigans
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/7617?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        
+        # Mens Jewelry
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/5034?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        
+        # Mens jeans
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/4208?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        
+        # mens pants and chinos
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/4910?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        
+        # mens underwear and socks
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/4030?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        
+        # Mens watches
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/19855?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        
+        # Mens sunglasses
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/6519?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        
+        # Mens swimsuits
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/13210?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+
+        # mens t-shirts and tanks tops
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/7616?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+
+        # mens shirts
+        API_URL = "https://www.asos.com/api/product/search/v2/categories/3602?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+
 
         # Fetch data from API
         response = requests.get(API_URL)
@@ -154,7 +133,7 @@ def main():
 
         products = api_data['products']
 
-        if not products: # this will stop the loop when we run out of products
+        if len(products) == 0: # this will stop the loop when we run out of products
             # active_api = False
             curr_num = curr_num + 200
             continue
@@ -187,14 +166,14 @@ def main():
         #     print(num_products_processed)
 
         curr_num = curr_num + 200
-        if curr_num > 0: # !! MAKE SURE TO CHANGE THIS TO MATCH THE NUMBER OF PRODUCTS IN THE CATEGORY (the less dumb ways dont work)
+        if curr_num > 3358: # !! MAKE SURE TO CHANGE THIS TO MATCH THE NUMBER OF PRODUCTS IN THE CATEGORY (the less dumb ways dont work)
              break
 
         # if len(all_product_details) >= 6221:
         #     break
 
 
-    with open('./asos_products/product_data_mens_CTAS.json', 'w') as outfile:
+    with open('./asos_products/mens_shirts_product_data.json', 'w') as outfile:
             json.dump(all_product_details, outfile, indent=4)
 
 if __name__ == "__main__":
