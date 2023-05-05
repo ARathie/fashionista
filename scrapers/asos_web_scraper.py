@@ -1,8 +1,7 @@
 # BEFORE RUNNING THIS SCRIPT YOU MUST
 # 1) Update the product_category in get_product_details()
 # 2) update gender in get_product_details
-# 3) Update the number of products to cycle through at the end of main()
-# 4) Select the right API_URL
+# 3) Select the right API_URL
 # 5) Change the outfile name at the bottom
 
 
@@ -22,7 +21,7 @@ def get_product_details(product):
 
     try:
         allowed_categories = ['top', 'bottom', 'outerwear', 'dress', 'swimwear', 'underwear', 'sleepwear', 'accessory', 'footwear']
-        product_category = 'top' # MAKE SURE TO UPDATE THIS ON EACH RUN
+        product_category = 'underwear' # MAKE SURE TO UPDATE THIS ON EACH RUN
         product_gender = 'men'
 
         product_url = "https://asos.com/us/" + product['url']
@@ -104,7 +103,7 @@ def main():
         # API_URL = "https://www.asos.com/api/product/search/v2/categories/4910?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
         
         # mens underwear and socks
-        # API_URL = "https://www.asos.com/api/product/search/v2/categories/4030?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        API_URL = "https://www.asos.com/api/product/search/v2/categories/4030?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
         
         # Mens watches
         # API_URL = "https://www.asos.com/api/product/search/v2/categories/19855?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
@@ -119,8 +118,20 @@ def main():
         # API_URL = "https://www.asos.com/api/product/search/v2/categories/7616?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
 
         # mens shirts
-        API_URL = "https://www.asos.com/api/product/search/v2/categories/3602?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/3602?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
 
+        # mens sweatpants
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/14274?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+
+        # Mens jackets and coats
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/3606?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        
+        # mens shorts
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/7078?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        
+        # mens shoes, boots, and sneakers
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/4209?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        
 
         # Fetch data from API
         response = requests.get(API_URL)
@@ -135,8 +146,9 @@ def main():
 
         if len(products) == 0: # this will stop the loop when we run out of products
             # active_api = False
-            curr_num = curr_num + 200
-            continue
+            # curr_num = curr_num + 200
+            # continue
+            break
         # print(len(products))
 
         
@@ -165,15 +177,18 @@ def main():
         #     num_products_processed +=1
         #     print(num_products_processed)
 
+
         curr_num = curr_num + 200
-        if curr_num > 3358: # !! MAKE SURE TO CHANGE THIS TO MATCH THE NUMBER OF PRODUCTS IN THE CATEGORY (the less dumb ways dont work)
-             break
+
+        # Not needed for Asos, was needed for nike
+        # if curr_num > 1000: # !! MAKE SURE TO CHANGE THIS TO MATCH THE NUMBER OF PRODUCTS IN THE CATEGORY (the less dumb ways dont work)
+            #  break
 
         # if len(all_product_details) >= 6221:
         #     break
 
 
-    with open('./asos_products/mens_shirts_product_data.json', 'w') as outfile:
+    with open('./asos_products/mens_underwear_and_socks_asos_product_data.json', 'w') as outfile:
             json.dump(all_product_details, outfile, indent=4)
 
 if __name__ == "__main__":
