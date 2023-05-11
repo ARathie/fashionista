@@ -1,3 +1,4 @@
+from unicodedata import category
 import psycopg2
 import openai_utils
 from openai_utils import openai_response
@@ -64,16 +65,26 @@ def insert_product_info_into_db(product_info):
     image_urls = product_info["image_urls"]
     tags = product_info["tags"]
     url = product_info["url"]
+    raw_color = product_info["raw_color"]
+    store_name = product_info["store_name"]
+    category = product_info["category"]
+    gender = product_info["gender"]
 
     # Get the OpenAI embedding of the description + name + str(tags)
     full_product_info = f"Product Name: {name}; Description: {description}; Tags: {str(tags)}"
     embedding = openai_utils.openai_embedding(full_product_info)
 
-    # Insert the product info into the database
+
     connection, cursor = get_db_connection_and_cursor()
+    # If the URL is already in the database, don't insert it again
+    cursor.execute("""SELECT * FROM product_info WHERE url = %(url)s""", {"url": url})
+    if cursor.fetchone() is not None:
+        return
+    
+    # Insert the product info into the database
     cursor.execute("""
-        INSERT INTO product_info (price, name, description, image_urls, tags, url, product_embedding)
-        VALUES (%(price)s, %(name)s, %(description)s, %(image_urls)s, %(tags)s, %(url)s, %(embedding)s)
+        INSERT INTO product_info (price, name, description, image_urls, tags, url, product_embedding, raw_color, store_name)
+        VALUES (%(price)s, %(name)s, %(description)s, %(image_urls)s, %(tags)s, %(url)s, %(embedding)s, %(raw_color)s, %(store_name)s, %(category)s, %(gender)s)
         """, {
             "price": price,
             "name": name,
@@ -81,7 +92,11 @@ def insert_product_info_into_db(product_info):
             "image_urls": image_urls,
             "tags": tags,
             "url": url,
-            "embedding": embedding
+            "embedding": embedding,
+            "raw_color": raw_color,
+            "store_name": store_name,
+            "category": category,
+            "gender": gender,
     })
 
     # Make the changes to the database persistent
@@ -210,7 +225,7 @@ def get_all_messages_for_user(email, limit=8):
             "content": message[2],
             "sent_from_user": message[3]
         })
-    return output_messages
+    return output_messages[::-1] # Reverse the order of the messages
 
 
 def update_product_category_colors_and_gender(product_id, category, colors, gender):
@@ -272,6 +287,26 @@ def get_uncategorized_products_from_db(limit=10, bias_towards_prompt=None):
             "tags": product[3]
         })
     return output_products
+
+
+def update_product_colors(product_id, colors_list):
+    """Update the colors of a product."""
+    # Update the product info in the database
+    connection, cursor = get_db_connection_and_cursor()
+    cursor.execute("""
+        UPDATE product_info
+        SET colors = %(colors)s
+        WHERE id = %(product_id)s
+        """, {
+            "product_id": product_id,
+            "colors": colors_list
+    })
+
+    # Make the changes to the database persistent
+    connection.commit()
+    # Close communication with the database
+    cursor.close()
+    connection.close()
 
 
 

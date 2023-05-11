@@ -104,7 +104,7 @@ def post():
     try:
         # Parse the response as a json string
         print("About to get JSON response")
-        json_response = json.loads(response)
+        json_response = json.loads(response, strict=False)
         print("Got JSON Response: ", json_response)
         # Get the rationale
         rationale = json_response["rationale"]
@@ -126,7 +126,7 @@ def post():
             similar_products = db_functions.find_similar_products(f"Type: {piece_type}; Description: {piece_description}", piece_type, gender, num_closest_products=3)
 
             # Get the first product from the list of similar products
-            print("Got similar products: ", similar_products)
+            # print("Got similar products: ", similar_products)
             formatted_similar_product_strings = [f"[{index}] Name: {product[5]}, Description: {product[2]}" for index, product in enumerate(similar_products)]
 
             # Use OpenAI to take in the descriptions and names of the products that were returned, along with the high-level rationale for the outfit + the product description that was used to search for the products, and return which product should be chosen of the ones that were returned
@@ -138,12 +138,17 @@ Product description: {piece_description}
 The products that you are choosing between are:
 {newline.join(formatted_similar_product_strings)}.
 
-Which product most closely matches the outfit description / product description? Return only a number {[i for i in range(len(formatted_similar_product_strings))]}:"""
+Please format your output as a JSON object, containing the following keys:
+- "product_id": the product ID of the product that you think is the best fit (return only the number; should be inside of {[i for i in range(len(formatted_similar_product_strings))]})
+- "rationale": a rationale for why you think that product is the best fit, in a single concise sentence
+
+Which product most closely matches the outfit description / product description? JSON:"""
             print("About to get response from OpenAI")
-            response = openai_utils.openai_response(prompt)
-            print("Got response from OpenAI: ", response)
+            validation_response = openai_utils.openai_response(prompt)
+            print("Got response from OpenAI: ", validation_response)
             # Get the index of the product that was chosen
-            product_index = int(response)
+            product_index = json.loads(validation_response)['product_id']
+            # product_index = int(validation_response)
             print("Got product index: ", product_index)
             # Get the product that was chosen
             product = similar_products[product_index]
@@ -226,15 +231,34 @@ def insert_product_info():
     image_urls = request_data.get('image_urls')
     tags = request_data.get('tags')
     url = request_data.get('url')
-    if price is None or name is None or description is None or image_urls is None or tags is None or url is None:
-        return jsonify(error="price, name, description, image_urls, tags, url fields are required"), 400
+    raw_color = request_data.get('raw_color')
+    store_name = request_data.get('store_name')
+    if price is None or name is None or description is None or image_urls is None or tags is None or url is None or raw_color is None or store_name is None:
+        return jsonify(error="price, name, description, image_urls, tags, url, raw_color, store_name fields are required"), 400
+    
+    # Check if category is in the request data - if it isn't there, set it to None
+    if 'category' in request_data:
+        category = request_data.get('category')
+    else:
+        category = None
+    
+    # Check if the gender is in the request data - if it isn't there, set it to None
+    if 'gender' in request_data:
+        gender = request_data.get('gender')
+    else:
+        gender = None
+        
     product_info = {
         "price": price,
         "name": name,
         "description": description,
         "image_urls": image_urls,
         "tags": tags,
-        "url": url
+        "url": url,
+        "raw_color": raw_color,
+        "store_name": store_name,
+        "category": category,
+        "gender": gender
     }
     db_functions.insert_product_info_into_db(product_info)
     return jsonify(text="Product info successfully inserted into database.")

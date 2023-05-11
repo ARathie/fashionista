@@ -1,7 +1,7 @@
 import openai
 import numpy as np
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 DEFAULT_OPENAI_MODEL = "gpt-3.5-turbo-0301"
 
