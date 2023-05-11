@@ -132,6 +132,30 @@ def main():
         # mens shoes, boots, and sneakers
         # API_URL = "https://www.asos.com/api/product/search/v2/categories/4209?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
         
+        
+        #############################
+        # UNSCRAPED ASOS PAGES #
+
+        # Mens suits
+        # https://www.asos.com/us/men/suits/cat/?cid=5678
+
+        # mens face and body gifts
+        # https://www.asos.com/us/men/face-body/50350/cat/?cid=50350
+
+        # mens body care
+        # https://www.asos.com/us/men/face-body/body-care/cat/?cid=27142
+
+        # mens loungewear (includes pajamas i think)
+        # https://www.asos.com/us/men/loungewear/cat/?cid=18797
+
+        # mens sportswear
+        # https://www.asos.com/us/men/activewear/cat/?cid=26090
+
+        # mens CTAS
+        # https://www.asos.com/us/men/ctas/cat/?cid=24920
+
+
+
 
         # Fetch data from API
         response = requests.get(API_URL)
