@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
@@ -25,13 +26,16 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import requests
 
+num_products_uploaded = 0
+
+
 def upload_product(json_object):
     server_url = "https://y41pim9ut5.execute-api.us-west-1.amazonaws.com/dev/insert_product_info"
     response = requests.post(server_url, json=json_object)
     return response.status_code
 
 def upload_json_file(file_path):
-    num_products_uploaded = 0
+    global num_products_uploaded
     # Load the JSON file
     with open(file_path, 'r') as json_file:
         products = json.load(json_file)
@@ -49,8 +53,23 @@ def upload_json_file(file_path):
 
 
 def main():
-    file_path = "./asos_products/product_data_mens_CTAS.json"
-    upload_json_file(file_path)
+    # file_path = "./asos_products/mens_underwear_and_socks_asos_product_data.json"
+    # upload_json_file(file_path)
+
+    
+    folder_path = "./asos_products/"
+    
+    # List all files in the directory
+    files = os.listdir(folder_path)
+    
+    # Iterate over each file and call the upload_json_file function
+    for file in files:
+        # Check if it's a JSON file
+        if file.endswith('.json'):
+            file_path = os.path.join(folder_path, file)
+            print(f"Uploading file: {file}")
+            upload_json_file(file_path)
+
 
 if __name__ == "__main__":
     main()
