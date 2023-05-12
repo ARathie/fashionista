@@ -141,7 +141,12 @@ function sendPostRequest() {
   
             if (piece.image_urls && piece.image_urls.length > 0) {
               const pieceImage = document.createElement('img');
-              pieceImage.src = piece.image_urls[0];
+              // If the image doesn't start with http:// or https://, then add https://
+              if (!piece.image_urls[0].startsWith('http://') && !piece.image_urls[0].startsWith('https://')) {
+                pieceImage.src = "https://" + piece.image_urls[0];
+              } else {
+                pieceImage.src = piece.image_urls[0];
+              }
               pieceImage.style.width = '100px'; // Adjust the image size if necessary
               pieceImage.style.cursor = 'pointer';
   

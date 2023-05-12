@@ -25,7 +25,7 @@ def get_all_products():
     return products
 
 
-def find_similar_products(embeddable_text, category, gender, num_closest_products=3):
+def find_similar_products(embeddable_text, category, gender, num_closest_products=3, store_name='nike'):
     """Use embedding similarity search, via cosine distance, to find the most similar products"""
     # Get the embedding for the text
     embedding = openai_utils.openai_embedding(embeddable_text)
@@ -35,14 +35,18 @@ def find_similar_products(embeddable_text, category, gender, num_closest_product
     cursor.execute("""
         SELECT id, created_at, description, product_embedding, tags, name, price, url, image_urls, product_embedding <-> CAST(%(embedding)s AS vector) AS distance
         FROM product_info
-        WHERE category = %(category)s AND (gender = %(gender)s OR gender = 'unisex')
+        WHERE 
+            category = %(category)s AND 
+            (gender = %(gender)s OR gender = 'unisex') AND
+            store_name = %(store_name)s
         ORDER BY distance ASC
         LIMIT %(num_closest_products)s
         """, {
             "embedding": embedding,
             "category": category,
             "gender": gender,
-            "num_closest_products": num_closest_products
+            "num_closest_products": num_closest_products,
+            "store_name": store_name
         })
     
     # Get the products from the database
@@ -71,7 +75,7 @@ def insert_product_info_into_db(product_info):
     gender = product_info["gender"]
 
     # Get the OpenAI embedding of the description + name + str(tags)
-    full_product_info = f"Product Name: {name}; Description: {description}; Tags: {str(tags)}"
+    full_product_info = f"Product Name: {name}; Description: {description}; Color: {raw_color};"
     embedding = openai_utils.openai_embedding(full_product_info)
 
 
@@ -83,7 +87,7 @@ def insert_product_info_into_db(product_info):
     
     # Insert the product info into the database
     cursor.execute("""
-        INSERT INTO product_info (price, name, description, image_urls, tags, url, product_embedding, raw_color, store_name)
+        INSERT INTO product_info (price, name, description, image_urls, tags, url, product_embedding, raw_color, store_name, category, gender)
         VALUES (%(price)s, %(name)s, %(description)s, %(image_urls)s, %(tags)s, %(url)s, %(embedding)s, %(raw_color)s, %(store_name)s, %(category)s, %(gender)s)
         """, {
             "price": price,
@@ -250,13 +254,42 @@ def update_product_category_colors_and_gender(product_id, category, colors, gend
     connection.close()
 
 
+
+def get_uncolored_products_from_db(limit=10, store_name = None):
+    """Pull randomly ordered products that don't have a color from the database."""
+    connection, cursor = get_db_connection_and_cursor()
+    cursor.execute("""
+        SELECT id, name, description, tags, raw_color
+        FROM product_info
+        WHERE colors IS NULL
+        -- Check if the store name is null or matches the store name
+        AND (store_name IS NULL OR store_name = %(store_name)s)
+        ORDER BY RANDOM()
+        LIMIT %(limit)s
+        """, { "limit": limit, "store_name": store_name })
+    products = cursor.fetchall()
+    # Close communication with the database
+    cursor.close()
+    connection.close()
+    output_products = []
+    for product in products:
+        output_products.append({
+            "id": product[0],
+            "name": product[1],
+            "description": product[2],
+            "tags": product[3],
+            "raw_color": product[4]
+        })
+    return output_products
+
+
 def get_uncategorized_products_from_db(limit=10, bias_towards_prompt=None):
     """Pull randomly ordered products that don't have a category from the database."""
     connection, cursor = get_db_connection_and_cursor()
     if bias_towards_prompt is None:
         # In this case, we don't want to bias towards any prompt.
         cursor.execute("""
-            SELECT id, name, description, tags FROM product_info
+            SELECT id, name, description, tags, raw_color FROM product_info
             WHERE category IS NULL
             ORDER BY RANDOM()
             LIMIT %(limit)s
@@ -284,7 +317,8 @@ def get_uncategorized_products_from_db(limit=10, bias_towards_prompt=None):
             "id": product[0],
             "name": product[1],
             "description": product[2],
-            "tags": product[3]
+            "tags": product[3],
+            "raw_color": product[4]
         })
     return output_products
 

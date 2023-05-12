@@ -38,9 +38,9 @@ def format_messages_with_starter_prompt(messages):
     messages_to_send.append({
         "role": "user",
         # "content": """You are a fashion concierge, who is helping advise someone on purchasing an outfit from an online shopping website. The user will give you a description of the type of outfit that they would like to be wearing, and you will return a JSON object containing an "outfit_pieces" key, which is an object containing multiple outfit pieces (like "top: <shirt_description>, bottom: <pants_description>", etc), along with a “rationale” key stored inside the JSON object. This rationale will address why the various pieces fit together with each other and how they fit in with what the user asked for, and will be returned directly to the user in a chat window so it should be conversational in nature. Please output only this JSON object, and when you are producing the JSON object, please produce the “rationale” key first. In later parts of the conversation, you will update the outfit based on user feedback. Additionally, be relatively descriptive with your returned product descriptions. The conversation will now begin, and remember, each time you respond, you will respond with correctly formatted JSON."""
-        "content": f"""You are a fashion concierge, who is helping advise someone on purchasing an outfit from an online shopping website. The user will give you a description of the type of outfit that they would like to be wearing, and you will return a JSON object containing an "outfit_pieces" key, which is an object containing multiple outfit pieces (like "top: <shirt_description>, bottom: <pants_description>", etc), along with a “rationale” key stored inside the JSON object. This rationale will address why the various pieces fit together with each other and how they fit in with what the user asked for, and will be returned directly to the user in a chat window so it should be conversational in nature. In later parts of the conversation, you will update the outfit based on user feedback. Additionally, be relatively descriptive with your returned product descriptions. The conversation will now begin, and remember, each time you respond, you will respond with correctly formatted JSON.
+        "content": f"""You are a fashion concierge, who is helping advise someone on purchasing an outfit from an online shopping website. The user will give you a description of the type of outfit that they would like to be wearing, and you will return a JSON object containing an "outfit_pieces" key, which is an object containing multiple outfit pieces (like "top: <shirt_description>, bottom: <pants_description>", etc), along with a “rationale” key stored inside the JSON object. This rationale will address why the various pieces fit together with each other and how they fit in with what the user asked for, and will be returned directly to the user in a chat window so it should be conversational in nature. In later parts of the conversation, you will update the outfit based on user feedback. Additionally, be relatively descriptive with your returned product descriptions. The conversation will now begin, and remember, each time you respond, you will respond with correctly formatted JSON. Also, realize that in some cases, you won't need to output the full JSON object, and can instead just output the "rationale" key (for example, when the user is asking more general questions about their style)
 
-Please return a JSON object with the following format, in the following order:
+Please return a JSON object with the following format, in the following order (remember, ONLY provide the keys that are specified below, nothing else):
 {{
   "rationale": <rationale for the output>,
   "outfit_pieces": {{
@@ -123,7 +123,17 @@ def post():
             gender = outfit_piece["gender"]
             colors = outfit_piece["colors"]
 
-            similar_products = db_functions.find_similar_products(f"Type: {piece_type}; Description: {piece_description}", piece_type, gender, num_closest_products=3)
+            num_products_to_return = 3
+
+            # Make a string that can be embedded into the database and is useful for searching
+            embeddable_text = f"Type: {piece_type}; Description: {piece_description}; Colors: {', '.join(colors)}"
+
+            # Search for the products that match the outfit piece
+            similar_products = db_functions.find_similar_products(embeddable_text, piece_type, gender, num_closest_products=num_products_to_return, store_name='asos')
+
+            # If there are no products that match the outfit piece, then just continue.
+            if len(similar_products) == 0:
+                continue
 
             # Get the first product from the list of similar products
             # print("Got similar products: ", similar_products)
@@ -139,17 +149,20 @@ The products that you are choosing between are:
 {newline.join(formatted_similar_product_strings)}.
 
 Please format your output as a JSON object, containing the following keys:
-- "product_id": the product ID of the product that you think is the best fit (return only the number; should be inside of {[i for i in range(len(formatted_similar_product_strings))]})
+- "product_id": the product ID of the product that you think is the best fit (return only the number; this number should be inside of {[i for i in range(len(formatted_similar_product_strings))]}, and remember it's zero-indexed.)
 - "rationale": a rationale for why you think that product is the best fit, in a single concise sentence
 
 Which product most closely matches the outfit description / product description? JSON:"""
-            print("About to get response from OpenAI")
+            print(f"About to get response from OpenAI. Request: {prompt}")
             validation_response = openai_utils.openai_response(prompt)
             print("Got response from OpenAI: ", validation_response)
             # Get the index of the product that was chosen
             product_index = json.loads(validation_response)['product_id']
             # product_index = int(validation_response)
             print("Got product index: ", product_index)
+            print("Type of product index: ", type(product_index))
+            if type(product_index) == list:
+                product_index = product_index[0]
             # Get the product that was chosen
             product = similar_products[product_index]
 
@@ -200,24 +213,6 @@ Which product most closely matches the outfit description / product description?
         # return jsonify(error="Error parsing response"), 500
 
     return jsonify(text=response)
-
-
-@app.route("/search_products", methods=['POST'])
-def search_products():
-    """Use embedding similarity search, via cosine distance, to find the most similar products"""
-    # Get the product info from the request
-    request_data = request.get_json()
-    name = request_data.get('name')
-    description = request_data.get('description')
-    tags = request_data.get('tags')
-
-    # Get the OpenAI embedding of the description + name + str(tags)
-    full_product_info = f"Product Name: {name}; Description: {description}; Tags: {str(tags)}"
-    similar_products = db_functions.find_similar_products(full_product_info, num_closest_products=1)
-
-    # Return the most similar products
-    # TODO: This should return a dictionary with all the product info, made nicely so the caller can access the name / url / image_urls
-    return jsonify(similar_products=similar_products)
 
 
 # POST request for inserting product info into the database
