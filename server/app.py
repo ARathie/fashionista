@@ -178,7 +178,7 @@ Which product most closely matches the outfit description / product description?
 
             # Add the product info to the list of pieces to return
             pieces_to_return.append({
-                "name": name,
+                "name": f"{name} (Original search query: {piece_description})",
                 "description": description,
                 "tags": tags,
                 "image_urls": image_urls,

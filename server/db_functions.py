@@ -37,7 +37,7 @@ def find_similar_products(embeddable_text, category, gender, num_closest_product
         FROM product_info
         WHERE 
             category = %(category)s AND 
-            (gender = %(gender)s OR gender = 'unisex') AND
+            (gender = %(gender)s OR gender = 'unisex' OR %(gender)s = 'unisex') AND
             store_name = %(store_name)s
         ORDER BY distance ASC
         LIMIT %(num_closest_products)s
