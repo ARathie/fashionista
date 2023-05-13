@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Website Talker",
+    "name": "Fashionista",
     "version": "1.0",
-    "description": "A Chrome extension to send POST requests to a server.",
+    "description": "Discover your vibe, quicker and more enjoyably.",
     "permissions": ["activeTab", "identity"],
     "host_permissions": ["http://*/*", "https://*/*"],
     "action": {
