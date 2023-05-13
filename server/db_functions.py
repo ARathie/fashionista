@@ -175,6 +175,19 @@ def insert_user_into_db(user_info):
     connection.close()
 
 
+def get_num_users():
+    """Get the number of users in the database."""
+    connection, cursor = get_db_connection_and_cursor()
+    cursor.execute("""
+        SELECT COUNT(*) FROM users
+        """)
+    num_users = cursor.fetchone()[0]
+
+    # Close communication with the database
+    cursor.close()
+    connection.close()
+    return num_users
+
 def insert_message_into_db(message_info):
     """Insert message info into the database."""
     # Extract relevant info from message_info

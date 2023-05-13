@@ -9,6 +9,8 @@ from infer_product_category import allowed_categories, allowed_colors, allowed_g
 import os
 from twilio.rest import Client
 
+from server.db_functions import is_user_in_db
+
 # Twilio config
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_SID', default='ACe6264e1545ee7823bba857e7dfb47034')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH', default='7d0c2770bd63707027ed18841548ee3a')
@@ -18,6 +20,7 @@ twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 FASHIONISTA_URL = "https://shopfashionista.squarespace.com/"
 JORDAN_CALENDLY_URL = "https://calendly.com/jordanwick/fashionista-chat"
 TRIAL_MESSAGE_CUTOFF = 8
+MAX_NUM_USERS = 100
 
 
 def send_message_twilio(to_number, from_number, message, media_url=None):
@@ -208,12 +211,21 @@ def twilio_webhook():
         "sent_from_user": True,
         "product_ids": []
     }
+    
+    # If the user is a new user and we have over 100 users already, then tell them that we're not accepting new users, unless they sign up for a demo at my calendly link
+    is_user_in_db = db_functions.is_user_in_db({"email": email})
+    if (not is_user_in_db) and db_functions.get_num_users() > MAX_NUM_USERS:
+        response_message = f"Thanks for checking out Fashionista! We're oversubscribed at the moment, and we're limiting access - to start using it, please sign up for a chat at the following link: {JORDAN_CALENDLY_URL}"
+        send_message_twilio(email, receiver, response_message)
+        return "Too many users"
+
+
     db_functions.insert_message_into_db(user_message_info)
     
     user_messages = db_functions.get_all_messages_for_user(email, limit = 20)
     if len(user_messages) > (TRIAL_MESSAGE_CUTOFF * 2): # Double this because each of their messages also results in a response message
         # We don't want to burn credits - tell people they can sign up at my calendly link for a demo, where we can do user interviews and get feedback
-        response_message = f"Thanks for trying out the Fashionista! If you'd like to continue using it, please sign up for a demo at {JORDAN_CALENDLY_URL}"
+        response_message = f"Thanks for trying out Fashionista! If you'd like to continue using it, please sign up for a chat at the following link: {JORDAN_CALENDLY_URL}"
         send_message_twilio(email, receiver, response_message)
         return "User has exceeded the trial message cutoff"
 
