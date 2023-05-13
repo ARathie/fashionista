@@ -130,8 +130,12 @@ function sendPostRequest() {
       } else {
         serverMessage.textContent = `Server: ${response.text}`;
 
+        console.log('response:', response)
+
         if (response.outfit_pieces) {
+          console.log('response.outfit_pieces:', response.outfit_pieces)
           response.outfit_pieces.forEach((piece) => {
+            console.log('piece:', piece)
             const pieceContainer = document.createElement('div');
             pieceContainer.style.marginTop = '10px';
 

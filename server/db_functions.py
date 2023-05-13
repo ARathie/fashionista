@@ -133,7 +133,7 @@ def is_user_in_db(user_info):
 
 
 def get_user_id_from_email(email):
-    """Get the user id from the email."""
+    """Get the user id from the email, or None if the user isn't in the DB."""
     connection, cursor = get_db_connection_and_cursor()
     cursor.execute("""
         SELECT id FROM users
@@ -141,7 +141,11 @@ def get_user_id_from_email(email):
         """, {
             "email": email
     })
-    user_id = cursor.fetchone()[0]
+    result = cursor.fetchone()
+    if result is None:
+        return None
+    user_id = result[0]
+
     # Close communication with the database
     cursor.close()
     connection.close()
@@ -179,6 +183,10 @@ def insert_message_into_db(message_info):
     content = message_info["content"]
     product_ids = message_info["product_ids"]
     user_id = get_user_id_from_email(email)
+
+    if user_id is None:
+        # Insert them into the DB
+        insert_user_into_db({"email": email})
 
     # Insert the message info into the database
     connection, cursor = get_db_connection_and_cursor()

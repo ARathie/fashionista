@@ -3,7 +3,7 @@ import numpy as np
 
 openai.api_key = "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"
 
-DEFAULT_OPENAI_MODEL = "gpt-3.5-turbo-0301"
+DEFAULT_OPENAI_MODEL = "gpt-3.5-turbo"
 
 def openai_embedding(input_text):
     """
