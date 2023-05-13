@@ -7,7 +7,7 @@ import json
 def get_db_connection_and_cursor():
     """Get a connection and cursor to the database."""
     connection = psycopg2.connect(user="postgres", password="jam-hackathon-project",
-                                  host="db.lwaxncactpfihaqzilda.supabase.co",
+                                  host="db.siosokxtbfhlkwzyvgsb.supabase.co",
                                   port="5432", database="postgres")
     # Create a cursor to perform database operations
     cursor = connection.cursor()
