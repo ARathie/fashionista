@@ -9,8 +9,6 @@ from infer_product_category import allowed_categories, allowed_colors, allowed_g
 import os
 from twilio.rest import Client
 
-from server.db_functions import is_user_in_db
-
 # Twilio config
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_SID', default='ACe6264e1545ee7823bba857e7dfb47034')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH', default='7d0c2770bd63707027ed18841548ee3a')
