@@ -1,4 +1,10 @@
-# Fashionista
+# Fashionista GPT
+
+## Executive Summary
+Fashionista AI is building an online shopping concierge, named Fai, that assists shoppers in finding the clothes that best suit their needs through a chatbot experience. Fai will be powered by LLMs, including GPT. Shoppers can interact with the concierge in a conversational manner to curate an outfit or quickly find products. They may ask the chatbot to use context such as an event they will be attending, a vibe they want to exude, a fashion style they want to match, a celebrity’s style they want to replicate, a task they want to perform, etc. The concierge will have expert knowledge of fashion trends and styles, and be able to index all of the products offered by a particular retailer.
+
+The chatbot will be accessed through a Google Chrome extension, in its initial version. Later on, it will be a plugin directly integrated into retailers’ websites.
+
 
 
 ## Uploading data to backend:
