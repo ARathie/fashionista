@@ -21,8 +21,8 @@ def get_product_details(product):
 
     try:
         allowed_categories = ['top', 'bottom', 'outerwear', 'dress', 'swimwear', 'underwear', 'sleepwear', 'accessory', 'footwear']
-        product_category = 'underwear' # MAKE SURE TO UPDATE THIS ON EACH RUN
-        product_gender = 'men'
+        product_category = 'bottom' # MAKE SURE TO UPDATE THIS ON EACH RUN
+        product_gender = 'women'
 
         product_url = "https://asos.com/us/" + product['url']
         product_price = product['price']['current']['value']
@@ -103,7 +103,7 @@ def main():
         # API_URL = "https://www.asos.com/api/product/search/v2/categories/4910?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
         
         # mens underwear and socks
-        API_URL = "https://www.asos.com/api/product/search/v2/categories/4030?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
+        # API_URL = "https://www.asos.com/api/product/search/v2/categories/4030?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
         
         # Mens watches
         # API_URL = "https://www.asos.com/api/product/search/v2/categories/19855?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
@@ -132,7 +132,7 @@ def main():
         # mens shoes, boots, and sneakers
         # API_URL = "https://www.asos.com/api/product/search/v2/categories/4209?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
         
-        
+
         #############################
         # UNSCRAPED ASOS PAGES #
 
@@ -153,6 +153,9 @@ def main():
 
         # mens CTAS
         # https://www.asos.com/us/men/ctas/cat/?cid=24920
+
+        # womens CTAS
+        API_URL = "https://www.asos.com/api/product/search/v2/categories/2640?offset=" + str(curr_num) + "&store=US&lang=en-US&currency=USD&country=US&keyStoreDataversion=ornjx7v-36&limit=200&region=CA"
 
 
 
@@ -205,14 +208,14 @@ def main():
         curr_num = curr_num + 200
 
         # Not needed for Asos, was needed for nike
-        # if curr_num > 1000: # !! MAKE SURE TO CHANGE THIS TO MATCH THE NUMBER OF PRODUCTS IN THE CATEGORY (the less dumb ways dont work)
-            #  break
+        if curr_num > 500: # !! MAKE SURE TO CHANGE THIS TO MATCH THE NUMBER OF PRODUCTS IN THE CATEGORY (the less dumb ways dont work)
+             break
 
         # if len(all_product_details) >= 6221:
         #     break
 
 
-    with open('./asos_products/mens_underwear_and_socks_asos_product_data.json', 'w') as outfile:
+    with open('./asos_products/womens_pants_asos_product_data.json', 'w') as outfile:
             json.dump(all_product_details, outfile, indent=4)
 
 if __name__ == "__main__":

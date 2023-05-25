@@ -57,7 +57,7 @@ def main():
     # upload_json_file(file_path)
 
     
-    folder_path = "./asos_products/"
+    folder_path = "./asos_products/womens"
     
     # List all files in the directory
     files = os.listdir(folder_path)
