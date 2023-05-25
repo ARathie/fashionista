@@ -297,7 +297,7 @@ def post():
     print("Got a POST request")
     request_data = request.get_json()
     message = request_data.get('message')
-    email = request_data.get('email')
+    email = 'ashwin.rathie@gmail.com'
     if message is None:
         return jsonify(error="message field is required"), 400
 
