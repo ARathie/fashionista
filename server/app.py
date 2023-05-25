@@ -58,7 +58,7 @@ def hello():
 def insert_user_into_db():
     print("Got a POST request")
     request_data = request.get_json()
-    email = request_data.get('email')
+    email = "ashwin.rathie@gmail.com"
     if email is None:
         return jsonify(error="email field is required"), 400
 
