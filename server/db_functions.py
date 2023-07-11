@@ -4,15 +4,15 @@ import openai_utils
 from openai_utils import openai_response
 import json
 
+
 def get_db_connection_and_cursor():
-    """Get a connection and cursor to the database."""
+    """Establishes a connection with the database and returns the connection and cursor"""
     connection = psycopg2.connect(user="postgres", password="jam-hackathon-project",
                                   host="db.siosokxtbfhlkwzyvgsb.supabase.co",
                                   port="5432", database="postgres")
     # Create a cursor to perform database operations
     cursor = connection.cursor()
     return connection, cursor
-
 
 def get_all_products():
     """Get all products from the database."""
@@ -26,7 +26,10 @@ def get_all_products():
 
 
 def find_similar_products(embeddable_text, category, gender, num_closest_products=3, store_name='nike'):
-    """Use embedding similarity search, via cosine distance, to find the most similar products"""
+    """Finds similar products based on the text embedding, category, gender, and store name
+    Generates an OpenAI embedding for the given text and then uses the pgvector extension to find the most similar products via cosine distance."""
+    
+    
     # Get the embedding for the text
     embedding = openai_utils.openai_embedding(embeddable_text)
 
@@ -61,7 +64,9 @@ def find_similar_products(embeddable_text, category, gender, num_closest_product
 
 
 def insert_product_info_into_db(product_info):
-    """Insert product info into the database."""
+    """Inserts product information into the database
+    The OpenAI embedding of the product description, name, and tags is computed and then stored along with other product details."""
+
     # Extract relevant info from product_info
     price = product_info["price"]
     name = product_info["name"]
@@ -113,7 +118,7 @@ def insert_product_info_into_db(product_info):
 # Messaging and User Functions
 
 def is_user_in_db(user_info):
-    """Check if a user is already in the database."""
+    """Check if a user is already in the database based on their email."""
     # Extract relevant info from user_info
     email = user_info["email"]
 
@@ -130,7 +135,6 @@ def is_user_in_db(user_info):
     cursor.close()
     connection.close()
     return user is not None
-
 
 def get_user_id_from_email(email):
     """Get the user id from the email, or None if the user isn't in the DB."""
@@ -152,7 +156,7 @@ def get_user_id_from_email(email):
     return user_id
 
 def insert_user_into_db(user_info):
-    """Insert user info into the database, if they're not already inside the DB."""
+    """Insert user info into the database identified by their email, if they're not already inside the DB."""
     # Extract relevant info from user_info
     email = user_info["email"]
 
@@ -188,8 +192,9 @@ def get_num_users():
     connection.close()
     return num_users
 
+
 def insert_message_into_db(message_info):
-    """Insert message info into the database."""
+    """Insert message info into the database. If the user is not in the database, it inserts the new user first"""
     # Extract relevant info from message_info
     email = message_info["email"]
     sent_from_user = message_info["sent_from_user"]
@@ -254,7 +259,7 @@ def get_all_messages_for_user(email, limit=8):
 
 
 def update_product_category_colors_and_gender(product_id, category, colors, gender):
-    """Update the product category, colors, and gender"""
+    """Update the product category, colors, and gender of a product"""
     # Update the product info in the database
     connection, cursor = get_db_connection_and_cursor()
     cursor.execute("""
@@ -273,7 +278,6 @@ def update_product_category_colors_and_gender(product_id, category, colors, gend
     # Close communication with the database
     cursor.close()
     connection.close()
-
 
 
 def get_uncolored_products_from_db(limit=10, store_name = None):
@@ -305,7 +309,9 @@ def get_uncolored_products_from_db(limit=10, store_name = None):
 
 
 def get_uncategorized_products_from_db(limit=10, bias_towards_prompt=None):
-    """Pull randomly ordered products that don't have a category from the database."""
+    """Pull randomly ordered products that don't have a category from the database.
+    Able to bias the product selection towards a given prompt"""
+
     connection, cursor = get_db_connection_and_cursor()
     if bias_towards_prompt is None:
         # In this case, we don't want to bias towards any prompt.

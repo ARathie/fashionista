@@ -10,11 +10,15 @@ import os
 from twilio.rest import Client
 
 # Twilio config
+# TODO: Switch these keys out
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_SID', default='ACe6264e1545ee7823bba857e7dfb47034')
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_SID', default="AC125dc512454b298c3393d7b9565aae6f") # Ash's
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH', default='7d0c2770bd63707027ed18841548ee3a')
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH', default='8111651b2e54b35ae8646c930cefec82') # Ash's
 
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
+# TODO: Switch this link out
 FASHIONISTA_URL = "https://shopfashionista.squarespace.com/"
 JORDAN_CALENDLY_URL = "https://calendly.com/jordanwick/fashionista-chat"
 TRIAL_MESSAGE_CUTOFF = 8
@@ -22,7 +26,7 @@ MAX_NUM_USERS = 100
 
 
 def send_message_twilio(to_number, from_number, message, media_url=None):
-    """Sends a message to a phone number."""
+    """sends a message to a specified phone number via Twilio. It also allows for an optional media URL to be attached to the message."""
     if media_url == None:
         twilio_message = twilio_client.messages.create(
             to=to_number,
@@ -39,6 +43,7 @@ def send_message_twilio(to_number, from_number, message, media_url=None):
 
 
 def extract_message_info_from_twilio_request(request):
+    """Extracts information (the message, the sender, and the receiver) from a Twilio request."""
     # keys are {'From', 'SmsMessageSid', 'FromZip', 'ToState', 'To', 'SmsSid', 'NumSegments', 'MessageSid', 'ToCountry', 'NumMedia', 'ApiVersion', 'FromCity', 'FromCountry', 'ToCity', 'ToZip', 'FromState', 'Body', 'SmsStatus', 'AccountSid'}
     message = request.values['Body']
     sender = request.values['From']
@@ -48,12 +53,14 @@ def extract_message_info_from_twilio_request(request):
 
 app = Flask(__name__)
 
+# basic Flask route for testing that returns "Hello World!" when accessed
 @app.route("/")
 def hello():
     return "Hello World!"
 
 
-# POST request for inserting user into database
+# POST request for inserting user into database.
+# Extracts the email from the request data and calls the insert_user_into_db function from the db_functions module.
 @app.route("/insert_user_into_db", methods=['POST'])
 def insert_user_into_db():
     print("Got a POST request")
@@ -114,7 +121,8 @@ Rules:
 
 
 def search_for_outfit_piece(outfit_piece, piece_type, outfit_rationale, num_products_to_consider=3):
-    """Searches for the closest piece of clothing to the outfit piece that is passed in. Also uses completion API to further refine which product is chosen."""
+    """Searches for the closest piece of clothing to the outfit piece that is passed in.
+    Also uses completion API to further refine which product is chosen."""
     # Search through the database for the products that match the outfit pieces
     piece_description = outfit_piece["description"]
     gender = outfit_piece["gender"]
@@ -291,7 +299,7 @@ def twilio_webhook():
     return str(response)
 
 
-# POST request for messaging
+# flask route for handling POST request for messaging
 @app.route("/post", methods=['POST'])
 def post():
     print("Got a POST request")
@@ -368,7 +376,7 @@ def post():
     })
 
 
-# POST request for inserting product info into the database
+# Flask route for handling POST requests for inserting product info into the database
 @app.route("/insert_product_info", methods=['POST'])
 def insert_product_info():
     """Insert product info into the database."""
