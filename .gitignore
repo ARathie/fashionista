@@ -133,3 +133,5 @@ dmypy.json
 db_data/
 
 openai_key.txt
+
+node_modules/

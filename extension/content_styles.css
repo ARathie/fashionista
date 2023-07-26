@@ -1,0 +1,44 @@
+body {
+    margin: 0;
+    width: 350px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, sans-serif;
+}
+
+#chatHistory {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+#chatForm {
+    display: flex;
+    padding: 8px;
+}
+#inputData {
+    flex-grow: 1;
+}
+
+.message-container {
+    max-width: 60%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 20px;
+  }
+  
+.user-message {
+    margin-left: auto;
+    background-color: #007AFF; /* Blue color similar to iMessage */
+    color: #fff;
+}
+  
+.server-message {
+    margin-right: auto;
+    background-color: #E1E1E1; /* Light gray color similar to iMessage */
+    color: #000;
+}
+  
+.message-text {
+    margin: 0;
+}

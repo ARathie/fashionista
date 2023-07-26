@@ -57,11 +57,22 @@ function storeUserEmail(email) {
     });
 }
 
-function createMessageElement(text, className) {
-  const messageElement = document.createElement('div');
-  messageElement.classList.add(className);
-  messageElement.innerHTML = text;
-  return messageElement;
+function createMessageElement(text, isUserMessage) {
+  const messageContainer = document.createElement('div');
+  messageContainer.classList.add('message-container');
+  if (isUserMessage) {
+    messageContainer.classList.add('user-message');
+  } else {
+    messageContainer.classList.add('server-message');
+  }
+
+  const messageText = document.createElement('p');
+  messageText.innerHTML = text;
+  messageText.classList.add('message-text');
+  
+  messageContainer.appendChild(messageText);
+
+  return messageContainer;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -97,10 +108,8 @@ function sendPostRequest() {
   const chatList = document.getElementById('chatList');
 
   // Send the user message
-  const userMessage = document.createElement('li');
-  userMessage.style.fontWeight = 'bold';
-  userMessage.textContent = `You: ${inputData}`;
-  chatList.appendChild(userMessage);
+  const userMessageElement = createMessageElement(inputData, true);
+  chatList.appendChild(userMessageElement);
 
   // Clear the input field after sending the message
   document.getElementById('inputData').value = '';
@@ -124,51 +133,49 @@ function sendPostRequest() {
   chrome.runtime.sendMessage(
     { type: 'sendPostRequest', backendServerURL, requestData },
     (response) => {
-      const serverMessage = document.createElement('li');
-      if (response.error) {
-        serverMessage.textContent = 'An error occurred while sending the POST request. Error: ' + response.error;
-      } else {
-        serverMessage.textContent = `Server: ${response.text}`;
-
-        console.log('response:', response)
-
-        if (response.outfit_pieces) {
-          console.log('response.outfit_pieces:', response.outfit_pieces)
-          response.outfit_pieces.forEach((piece) => {
-            console.log('piece:', piece)
-            const pieceContainer = document.createElement('div');
-            pieceContainer.style.marginTop = '10px';
-
-            const pieceName = document.createElement('p');
-            pieceName.textContent = piece.name;
-            pieceContainer.appendChild(pieceName);
-  
-            if (piece.image_urls && piece.image_urls.length > 0) {
-              const pieceImage = document.createElement('img');
-              // If the image doesn't start with http:// or https://, then add https://
-              if (!piece.image_urls[0].startsWith('http://') && !piece.image_urls[0].startsWith('https://')) {
-                pieceImage.src = "https://" + piece.image_urls[0];
-              } else {
-                pieceImage.src = piece.image_urls[0];
-              }
-              pieceImage.style.width = '100px'; // Adjust the image size if necessary
-              pieceImage.style.cursor = 'pointer';
-  
-              pieceImage.addEventListener('click', () => {
-                window.open(piece.url, '_blank');
-              });
-  
-              pieceContainer.appendChild(pieceImage);
-            }
-  
-            serverMessage.appendChild(pieceContainer);
-          });
-        }
-      }
-  
+      const serverMessageText = response.error ? `An error occurred while sending the POST request. Error: ${response.error}` : `${response.text}`;
+      const serverMessageElement = createMessageElement(serverMessageText, false);
+      
       // Remove typing indicator and add user and server messages
       chatList.removeChild(document.getElementById('typingIndicator'));
-      chatList.appendChild(serverMessage);
+      chatList.appendChild(serverMessageElement);
+
+      console.log('response:', response)
+
+      if (response.outfit_pieces) {
+        console.log('response.outfit_pieces:', response.outfit_pieces)
+        response.outfit_pieces.forEach((piece) => {
+          console.log('piece:', piece)
+          const pieceContainer = document.createElement('div');
+          // pieceContainer.style.marginTop = '10px';
+
+          const pieceName = document.createElement('p');
+          pieceName.textContent = piece.name;
+          pieceContainer.appendChild(pieceName);
+          if (piece.image_urls && piece.image_urls.length > 0) {
+            const pieceImage = document.createElement('img');
+            // If the image doesn't start with http:// or https://, then add https://
+            if (!piece.image_urls[0].startsWith('http://') && !piece.image_urls[0].startsWith('https://')) {
+              pieceImage.src = "https://" + piece.image_urls[0];
+            } else {
+              pieceImage.src = piece.image_urls[0];
+            }
+            pieceImage.style.width = '100px'; // Adjust the image size if necessary
+            pieceImage.style.cursor = 'pointer';
+
+            pieceImage.addEventListener('click', () => {
+              window.open(piece.url, '_blank');
+            });
+
+            pieceContainer.appendChild(pieceImage);
+          }
+
+                  // Create a new server message element for each piece
+            const pieceMessageElement = createMessageElement('', false); // Initial text is empty
+            pieceMessageElement.appendChild(pieceContainer);
+            chatList.appendChild(pieceMessageElement);
+        });
+        }
   
       // Scroll to the bottom of the chat history
       document.getElementById('chatHistory').scrollTop = chatList.scrollHeight;

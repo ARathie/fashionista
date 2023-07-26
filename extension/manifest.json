@@ -16,7 +16,7 @@
           "*://*.asos.com/*"
         ],
         "js": ["content_script.js"],
-        "css": ["styles.css"]
+        "css": ["popup_styles.css"]
       }
     ],
     "background": {
