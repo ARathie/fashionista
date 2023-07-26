@@ -4,7 +4,6 @@ import openai_utils
 from openai_utils import openai_response
 import json
 
-
 def get_db_connection_and_cursor():
     """Establishes a connection with the database and returns the connection and cursor"""
     connection = psycopg2.connect(user="postgres", password="jam-hackathon-project",
