@@ -188,7 +188,8 @@ Which product most closely matches the outfit description / product description?
 
     # Return the product info
     return {
-        "name": f"{name} (Original search query: {piece_description}, Rationale when searching: {product_rationale}, Model confident in returned item: {model_confident_in_returned_item})",
+        # "name": f"{name} (Original search query: {piece_description}, Rationale when searching: {product_rationale}, Model confident in returned item: {model_confident_in_returned_item})",
+        "name": f"{name}",
         "description": description,
         "tags": tags,
         "image_urls": image_urls,
