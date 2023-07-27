@@ -1,12 +1,13 @@
-const floatingIcon = document.createElement('div');
+const floatingIcon = document.createElement('img');
+floatingIcon.src = chrome.runtime.getURL('icon.png');
 floatingIcon.id = 'website-talker-floating-icon';
-floatingIcon.title = 'Open Website Talker';
+floatingIcon.title = 'Fashionista AI';
 
-const iconImage = document.createElement('img');
-iconImage.src = chrome.runtime.getURL('icon.png');
-iconImage.width = 48;
-iconImage.height = 48;
-floatingIcon.appendChild(iconImage);
+// const iconImage = document.createElement('img');
+// iconImage.src = chrome.runtime.getURL('icon.png');
+// iconImage.width = 48;
+// iconImage.height = 48;
+// floatingIcon.appendChild(iconImage);
 
 document.body.appendChild(floatingIcon);
 
@@ -15,7 +16,9 @@ document.body.appendChild(floatingIcon);
 // popupWrapper.style.display = 'none';
 // document.body.appendChild(popupWrapper);
 
-const popupWrapper = document.createElement('div');
+const popupWrapper = document.createElement('iframe');
+popupWrapper.id = 'website-talker-popup-frame';
+popupWrapper.src = chrome.runtime.getURL('popup.html');
 popupWrapper.id = 'website-talker-popup-wrapper';
 popupWrapper.style.display = 'none';
 popupWrapper.style.width = '400px';
@@ -24,13 +27,13 @@ popupWrapper.style.padding = '10px';
 popupWrapper.style.boxSizing = 'border-box';
 document.body.appendChild(popupWrapper);
 
-const popupFrame = document.createElement('iframe');
-popupFrame.id = 'website-talker-popup-frame';
-popupFrame.src = chrome.runtime.getURL('popup.html');
-popupFrame.style.border = 'none';
-popupFrame.style.width = '400px';
-popupFrame.style.height = '500px';
-popupWrapper.appendChild(popupFrame);
+// const popupFrame = document.createElement('iframe');
+// popupFrame.id = 'website-talker-popup-frame';
+// popupFrame.src = chrome.runtime.getURL('popup.html');
+// popupFrame.style.border = 'none';
+// popupFrame.style.width = '400px';
+// popupFrame.style.height = '500px';
+// popupWrapper.appendChild(popupFrame);
 
 
 const inputDataLabel = document.createElement('label');
