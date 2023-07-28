@@ -18,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 def get_product_details(product_href):
     allowed_categories = ['top', 'bottom', 'outerwear', 'dress', 'swimwear', 'underwear', 'sleepwear', 'accessory', 'footwear']
     product_url = 'https://turtleson.com' + product_href
-    product_category = 'accessory'
+    product_category = 'swimwear'
     product_gender = 'men'
 
     try:
@@ -117,11 +117,11 @@ def main():
     # scroll_to_load_products(driver)
     
     product_data = []
-    num_products = 201
+    num_products = 3
     pages = math.ceil(num_products/12)
     for page in range(0,pages+1):
         # Replace 'example.com' with the URL of the clothing brand's website
-        URL = 'https://turtleson.com/collections/wardrobe-accessories' + '?page=' + str(page)
+        URL = 'https://turtleson.com/collections/swim-trunks' + '?page=' + str(page)
         response = requests.get(URL)
         soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -140,7 +140,7 @@ def main():
 
 
 
-    with open('./turtleson_products/mens_accessories_turtleson_product_data.json', 'w') as outfile:
+    with open('./turtleson_products/mens_swim_trunks_turtleson_product_data.json', 'w') as outfile:
         json.dump(product_data, outfile, indent=4)
 
 if __name__ == "__main__":
