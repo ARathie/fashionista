@@ -52,7 +52,7 @@ def get_product_details(product_href):
 
     
         # Find all divs containing product images
-        image_divs = soup.find_all('div', {'class': 'product__media-item'})
+        image_divs = soup.find('div', {'class': 'product__media-item'})
 
         # Extract image URLs from each div
         image_urls = []
