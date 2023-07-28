@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request
 import db_functions
 import time, json
 import openai_utils
-from infer_product_category import allowed_categories, allowed_colors, allowed_genders
+from infer_product_category import allowed_categories, allowed_colors, allowed_genders, allowed_product_names
 
 import constants
 import twilio_helpers
