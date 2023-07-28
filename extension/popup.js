@@ -56,6 +56,16 @@ function storeUserEmail(email) {
     });
 }
 
+// set images
+let button = document.getElementById('sendPostRequest');
+let img = document.createElement('img');
+img.src = chrome.runtime.getURL('send_icon.png');
+img.className = 'send-icon'
+button.appendChild(img);
+
+const messagerIcon = document.getElementById('messager-icon');
+messagerIcon.src = chrome.runtime.getURL('icon.png');
+
 function createMessageElement(text, isUserMessage) {
   const messageContainer = document.createElement('div');
   messageContainer.classList.add('message-container');
@@ -142,16 +152,28 @@ function sendPostRequest() {
     console.log('response:', response);
 
     if (response.outfit_pieces) {
-      console.log('response.outfit_pieces:', response.outfit_pieces);
-      response.outfit_pieces.forEach((piece) => {
-        console.log('piece:', piece);
-        const pieceContainer = document.createElement('div');
-        // pieceContainer.style.marginTop = '10px';
-
+      // Create a single server message element for all pieces
+      const messageElement = createMessageElement('', false); // Initial text is empty
+    
+      // Create a flex container for the pieces
+      const piecesContainer = document.createElement('div');
+      piecesContainer.style.display = 'flex';
+      piecesContainer.style.flexDirection = 'column';
+    
+      // Create a flex container for the images
+      const imagesContainer = document.createElement('div');
+      imagesContainer.style.display = 'flex';
+      imagesContainer.style.flexWrap = 'wrap';
+      imagesContainer.style.justifyContent = 'center';
+    
+      response.outfit_pieces.forEach((piece, index) => {
+        // Create a piece name element
         const pieceName = document.createElement('p');
-        pieceName.textContent = piece.name;
+        pieceName.textContent = `${index + 1}. ${piece.name}`;
         pieceName.classList.add('message-text');
-        pieceContainer.appendChild(pieceName);
+        piecesContainer.appendChild(pieceName);
+    
+        // Create a piece image element, if an image URL exists
         if (piece.image_urls && piece.image_urls.length > 0) {
           const pieceImage = document.createElement('img');
           // If the image doesn't start with http:// or https://, then add https://
@@ -162,19 +184,22 @@ function sendPostRequest() {
           }
           pieceImage.style.width = '100px'; // Adjust the image size if necessary
           pieceImage.style.cursor = 'pointer';
-
+          pieceImage.style.margin = '10px'; // Add spacing between images
+    
           pieceImage.addEventListener('click', () => {
             window.open(piece.url, '_blank');
           });
-
-          pieceContainer.appendChild(pieceImage);
+    
+          imagesContainer.appendChild(pieceImage);
         }
-
-        // Create a new server message element for each piece
-        const pieceMessageElement = createMessageElement('', false); // Initial text is empty
-        pieceMessageElement.appendChild(pieceContainer);
-        chatList.appendChild(pieceMessageElement);
       });
+    
+      // Append the pieces and images containers to the message element
+      if (response.outfit_pieces.length > 0) {
+        messageElement.appendChild(piecesContainer);
+        messageElement.appendChild(imagesContainer);
+        chatList.appendChild(messageElement);
+      }
     }
 
     // Scroll to the bottom of the chat history
