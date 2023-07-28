@@ -33,11 +33,11 @@
   }
   
 .fade-out {
-  transition: opacity 0.25s; 
+  transition: opacity 0.2s; 
   opacity: 0;
 }
 
 .fade-in {
-  transition: opacity 0.25s;
+  transition: opacity 0.2s;
   opacity: 1;
 }

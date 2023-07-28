@@ -30,6 +30,12 @@ function getEmail(callback) {
   });
 }
 
+function getFirstMessage(storeName) {
+  return "Hello! I'm Fai, your personal fashion advisor here at " + 
+  storeName +
+  ". Need help finding a style or item? Preparing for an event? Or simply seeking fashion inspiration? Just let me know - I'm at your service."
+}
+
 function storeUserEmail(email) {
   const backendServerURL = baseServerUrl + '/insert_user_into_db';
   const requestData = {
@@ -100,6 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
     sendPostRequest();
   });
+
+  // set first message
+  const chatList = document.getElementById('chatList');
+  console.log('DOMcoontentloaded')
+  chatList.appendChild(createMessageElement(getFirstMessage('Turtleson'), false));
 });
 
 function sendPostRequest() {
@@ -151,27 +162,20 @@ function sendPostRequest() {
 
     console.log('response:', response);
 
-    if (response.outfit_pieces) {
+    if (response.outfit_pieces && response.outfit_pieces.length > 0) {
       // Create a single server message element for all pieces
       const messageElement = createMessageElement('', false); // Initial text is empty
+      messageElement.classList.add('pieces-message');
     
-      // Create a flex container for the pieces
-      const piecesContainer = document.createElement('div');
-      piecesContainer.style.display = 'flex';
-      piecesContainer.style.flexDirection = 'column';
+      response.outfit_pieces.forEach((piece) => {
+        // Create a flex container for each row (image and title)
+        const rowContainer = document.createElement('div');
+        rowContainer.classList.add('pieces-container');
     
-      // Create a flex container for the images
-      const imagesContainer = document.createElement('div');
-      imagesContainer.style.display = 'flex';
-      imagesContainer.style.flexWrap = 'wrap';
-      imagesContainer.style.justifyContent = 'center';
-    
-      response.outfit_pieces.forEach((piece, index) => {
         // Create a piece name element
         const pieceName = document.createElement('p');
-        pieceName.textContent = `${index + 1}. ${piece.name}`;
-        pieceName.classList.add('message-text');
-        piecesContainer.appendChild(pieceName);
+        pieceName.textContent = `${piece.name}`;
+        pieceName.classList.add('piece-text');
     
         // Create a piece image element, if an image URL exists
         if (piece.image_urls && piece.image_urls.length > 0) {
@@ -182,25 +186,25 @@ function sendPostRequest() {
           } else {
             pieceImage.src = piece.image_urls[0];
           }
-          pieceImage.style.width = '100px'; // Adjust the image size if necessary
-          pieceImage.style.cursor = 'pointer';
-          pieceImage.style.margin = '10px'; // Add spacing between images
+          pieceImage.classList.add("piece-image");
     
           pieceImage.addEventListener('click', () => {
             window.open(piece.url, '_blank');
           });
     
-          imagesContainer.appendChild(pieceImage);
+          rowContainer.appendChild(pieceImage);
         }
+    
+        // Append the piece name to the row container
+        rowContainer.appendChild(pieceName);
+    
+        // Append the row container to the message element
+        messageElement.appendChild(rowContainer);
       });
     
-      // Append the pieces and images containers to the message element
-      if (response.outfit_pieces.length > 0) {
-        messageElement.appendChild(piecesContainer);
-        messageElement.appendChild(imagesContainer);
-        chatList.appendChild(messageElement);
-      }
-    }
+      // Append the message element to the chat list
+      chatList.appendChild(messageElement);
+    }    
 
     // Scroll to the bottom of the chat history
     document.getElementById('chatHistory').scrollTop = chatList.scrollHeight;

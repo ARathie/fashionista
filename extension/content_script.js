@@ -115,7 +115,7 @@ floatingIcon.addEventListener('click', () => {
     floatingIcon.classList.add('fade-in');
     popupWrapper.classList.remove('fade-out');
     popupWrapper.classList.add('fade-in');
-  }, 250); // matches the adjusted transition duration
+  }, 200); // matches the adjusted transition duration
 });
 
 chrome.runtime.sendMessage({ type: 'openPopup' });

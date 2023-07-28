@@ -45,7 +45,6 @@ body {
 
 .message-container {
     max-width: 75%;
-    padding: 10px;
     margin-bottom: 10px;
     border-radius: 10px;
     padding: 17px 20px
@@ -61,12 +60,42 @@ body {
     margin-right: auto;
     background-color: #f2f2f2; /* Light gray color similar to iMessage */
     color: #000;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.piece-image {
+    width: 184px;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.piece-text {
+    width: 184px;
+    font-family: system-ui, "Segoe UI", Roboto;
+    text-align: center;
+    font-weight: 200;
+    font-size: 13px;
+}
+
+.pieces-message {
+    padding: 5px 5px;
+    max-width: 95%;
+}
+
+.pieces-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 5px;
 }
   
 .message-text {
     margin: 0;
     font-size: 14px;
     font-family: system-ui, "Segoe UI", Roboto;
+    line-height: 1.4;
+    min-height: 10px;
 }
 
 .send-icon {
