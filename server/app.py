@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request
 import db_functions
 import time, json
 import openai_utils
-from infer_product_category import allowed_categories, allowed_colors, allowed_genders, allowed_product_names
+from infer_product_category import allowed_categories, allowed_colors, allowed_genders
 
 import constants
 import twilio_helpers
@@ -56,7 +56,6 @@ Format of the response JSON object:
       'description': '<descriptive details of the clothing piece>',
       'colors': ['<recommended colors>'],
       'gender': '<intended gender of the item>'
-      'name': '<name>'
     }}]
   }}
 }}
@@ -65,7 +64,6 @@ Guidelines:
 - Select 'clothing_type' from this predefined list: {allowed_categories}.
 - Recommend colors only from the following palette: {allowed_colors}.
 - Specify 'gender' using one of the allowed options: {allowed_genders}.
-- Select 'name' from this predefined list: {allowed_product_names}
 """
 
         
