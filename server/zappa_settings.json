@@ -1,11 +1,11 @@
 {
-    "dev": {
-        "app_function": "app.app",
-        "aws_region": "us-west-1",
-        "profile_name": "default",
-        "project_name": "server",
-        "runtime": "python3.9",
-        "s3_bucket": "zappa-ct49evmqn",
-        "slim_handler": true
-    }
+  "dev": {
+    "app_function": "app.app",
+    "aws_region": "us-west-1",
+    "profile_name": "default",
+    "project_name": "server",
+    "runtime": "python3.9",
+    "s3_bucket": "zappa-fashionista-ai",
+    "slim_handler": true
+  }
 }

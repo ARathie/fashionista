@@ -90,7 +90,7 @@ def search_for_outfit_piece(outfit_piece, piece_type, outfit_rationale, num_prod
     embeddable_text = f"Type: {piece_type}; Description: {piece_description}; Colors: {', '.join(colors)}"
 
     # Search for the products that match the outfit piece
-    similar_products = db_functions.find_similar_products(embeddable_text, piece_type, gender, num_closest_products=num_products_to_consider, store_name='asos')
+    similar_products = db_functions.find_similar_products(embeddable_text, piece_type, gender, num_closest_products=num_products_to_consider, store_name='turtleson')
 
     # If there are no products that match the outfit piece, then just continue.
     if len(similar_products) == 0:
