@@ -85,9 +85,9 @@ def insert_product_info_into_db(product_info):
 
     connection, cursor = get_db_connection_and_cursor()
     # If the URL is already in the database, don't insert it again
-    cursor.execute("""SELECT * FROM product_info WHERE url = %(url)s""", {"url": url})
-    if cursor.fetchone() is not None:
-        return
+    # cursor.execute("""SELECT * FROM product_info WHERE url = %(url)s""", {"url": url})
+    # if cursor.fetchone() is not None:
+    #     return
     
     # Insert the product info into the database
     cursor.execute("""
