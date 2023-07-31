@@ -1,23 +1,130 @@
-#website-talker-floating-icon {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 9999;
+body {
+    margin: 0;
+    /* width: 350px; */
+    height: 704px;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, sans-serif;
+}
+
+#chatHistory {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 0px 20px 0px 20px;
+}
+
+#chatList {
+    display: flex;
+    flex-direction: column;
+}
+
+#chatForm {
+    display: flex;
+}
+
+#inputData {
+    flex-grow: 1;
+    border: none;
+    outline: none;
+    height: 55px;
+    text-indent: 20px;
+}
+
+#chatInputInterface {
+    height: 55px;
+    border: none;
+    border-top: 1px solid #ebebeb;
+}
+
+.send-button {
+    background: none;
+    border: none;
+    padding: 0;
     cursor: pointer;
-    border-radius: 50%;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.message-container {
+    max-width: 75%;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    padding: 17px 20px
   }
   
-  #website-talker-popup-wrapper {
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    width: 300px;
-    height: 200px;
-    background-color: white;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
-    z-index: 9998;
-    overflow: hidden;
-    border-radius: 5px;
-  }
+.user-message {
+    margin-left: auto;
+    background-color: #007AFF; /* Blue color similar to iMessage */
+    color: #fff;
+}
   
+.server-message {
+    margin-right: auto;
+    background-color: #f2f2f2; /* Light gray color similar to iMessage */
+    color: #000;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.piece-image {
+    width: 184px;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.piece-text {
+    width: 184px;
+    font-family: system-ui, "Segoe UI", Roboto;
+    text-align: center;
+    font-weight: 200;
+    font-size: 13px;
+}
+
+.pieces-message {
+    padding: 5px 5px;
+    max-width: 95%;
+}
+
+.pieces-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 5px;
+}
+  
+.message-text {
+    margin: 0;
+    font-size: 14px;
+    font-family: system-ui, "Segoe UI", Roboto;
+    line-height: 1.4;
+    min-height: 10px;
+}
+
+.send-icon {
+    width: 27px;
+    height: 27px;
+}
+
+.top-bar {
+    height: 64px;
+    background-color: #007AFF; /* Blue color similar to iMessage */
+    display: flex;
+    align-items: center;
+    padding-left: 15px; 
+}
+
+#messager-icon {
+    /* position: fixed;
+    top: 20px; */
+    left: 40px;
+    width: 55px;
+    height: 55px;
+    /* border-radius: 50%; */
+}
+
+#topbar-text {
+    flex-direction: column;
+    display: flex;
+    /* align-items: center; */
+    justify-content: center;
+    margin: 0;
+    color: white;
+}

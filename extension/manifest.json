@@ -13,10 +13,11 @@
       {
         "matches": [
           "*://*.nike.com/*",
-          "*://*.asos.com/*"
+          "*://*.asos.com/*",
+          "*://*.turtleson.com/*"
         ],
         "js": ["content_script.js"],
-        "css": ["popup_styles.css"]
+        "css": ["icon_styles.css"]
       }
     ],
     "background": {

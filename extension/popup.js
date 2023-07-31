@@ -1,7 +1,6 @@
-let userEmail = "";
+let userEmail = '';
 // const baseServerUrl = "https://y41pim9ut5.execute-api.us-west-1.amazonaws.com/dev";
-const baseServerUrl = "http://127.0.0.1:5001";
-
+const baseServerUrl = 'http://127.0.0.1:5001';
 
 function getEmail(callback) {
   console.log('Getting user email...');
@@ -31,31 +30,47 @@ function getEmail(callback) {
   });
 }
 
+function getFirstMessage(storeName) {
+  return "Hello! I'm Fai, your personal fashion advisor here at " + 
+  storeName +
+  ". Need help finding a style or item? Preparing for an event? Or simply seeking fashion inspiration? Just let me know - I'm at your service."
+}
+
 function storeUserEmail(email) {
   const backendServerURL = baseServerUrl + '/insert_user_into_db';
   const requestData = {
-    email: email
+    email: email,
   };
 
   fetch(backendServerURL, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify(requestData)
+    body: JSON.stringify(requestData),
   })
-    .then(response => response.json())
-    .then(data => {
+    .then((response) => response.json())
+    .then((data) => {
       if (data.error) {
         console.error('Error storing user email:', data.error);
       } else {
         console.log('User email stored successfully:', data);
       }
     })
-    .catch(error => {
+    .catch((error) => {
       console.error('Error:', error);
     });
 }
+
+// set images
+let button = document.getElementById('sendPostRequest');
+let img = document.createElement('img');
+img.src = chrome.runtime.getURL('send_icon.png');
+img.className = 'send-icon'
+button.appendChild(img);
+
+const messagerIcon = document.getElementById('messager-icon');
+messagerIcon.src = chrome.runtime.getURL('icon.png');
 
 function createMessageElement(text, isUserMessage) {
   const messageContainer = document.createElement('div');
@@ -67,9 +82,9 @@ function createMessageElement(text, isUserMessage) {
   }
 
   const messageText = document.createElement('p');
-  messageText.innerHTML = text;
+  messageText.textContent = text;
   messageText.classList.add('message-text');
-  
+
   messageContainer.appendChild(messageText);
 
   return messageContainer;
@@ -91,17 +106,22 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
     sendPostRequest();
   });
+
+  // set first message
+  const chatList = document.getElementById('chatList');
+  console.log('DOMcoontentloaded')
+  chatList.appendChild(createMessageElement(getFirstMessage('Turtleson'), false));
 });
 
 function sendPostRequest() {
-  console.log('Sending POST request...')
+  console.log('Sending POST request...');
   const backendServerURL = baseServerUrl + '/post';
   const inputData = document.getElementById('inputData').value;
-  console.log('inputData:', inputData)
-  console.log('email:', userEmail)
+  console.log('inputData:', inputData);
+  console.log('email:', userEmail);
   const requestData = {
     message: inputData,
-    email: userEmail
+    email: userEmail,
   };
 
   // Add typing indicator
@@ -127,58 +147,66 @@ function sendPostRequest() {
   // Scroll to the bottom of the chat history
   document.getElementById('chatHistory').scrollTop = chatList.scrollHeight;
 
-  console.log('inputData:', inputData)
-  console.log('requestData:', requestData)
+  console.log('inputData:', inputData);
+  console.log('requestData:', requestData);
 
-  chrome.runtime.sendMessage(
-    { type: 'sendPostRequest', backendServerURL, requestData },
-    (response) => {
-      const serverMessageText = response.error ? `An error occurred while sending the POST request. Error: ${response.error}` : `${response.text}`;
-      const serverMessageElement = createMessageElement(serverMessageText, false);
-      
-      // Remove typing indicator and add user and server messages
-      chatList.removeChild(document.getElementById('typingIndicator'));
-      chatList.appendChild(serverMessageElement);
+  chrome.runtime.sendMessage({ type: 'sendPostRequest', backendServerURL, requestData }, (response) => {
+    const serverMessageText = response.error
+      ? `An error occurred while sending the POST request. Error: ${response.error}`
+      : `${response.text}`;
+    const serverMessageElement = createMessageElement(serverMessageText, false);
 
-      console.log('response:', response)
+    // Remove typing indicator and add user and server messages
+    chatList.removeChild(document.getElementById('typingIndicator'));
+    chatList.appendChild(serverMessageElement);
 
-      if (response.outfit_pieces) {
-        console.log('response.outfit_pieces:', response.outfit_pieces)
-        response.outfit_pieces.forEach((piece) => {
-          console.log('piece:', piece)
-          const pieceContainer = document.createElement('div');
-          // pieceContainer.style.marginTop = '10px';
+    console.log('response:', response);
 
-          const pieceName = document.createElement('p');
-          pieceName.textContent = piece.name;
-          pieceContainer.appendChild(pieceName);
-          if (piece.image_urls && piece.image_urls.length > 0) {
-            const pieceImage = document.createElement('img');
-            // If the image doesn't start with http:// or https://, then add https://
-            if (!piece.image_urls[0].startsWith('http://') && !piece.image_urls[0].startsWith('https://')) {
-              pieceImage.src = "https://" + piece.image_urls[0];
-            } else {
-              pieceImage.src = piece.image_urls[0];
-            }
-            pieceImage.style.width = '100px'; // Adjust the image size if necessary
-            pieceImage.style.cursor = 'pointer';
-
-            pieceImage.addEventListener('click', () => {
-              window.open(piece.url, '_blank');
-            });
-
-            pieceContainer.appendChild(pieceImage);
+    if (response.outfit_pieces && response.outfit_pieces.length > 0) {
+      // Create a single server message element for all pieces
+      const messageElement = createMessageElement('', false); // Initial text is empty
+      messageElement.classList.add('pieces-message');
+    
+      response.outfit_pieces.forEach((piece) => {
+        // Create a flex container for each row (image and title)
+        const rowContainer = document.createElement('div');
+        rowContainer.classList.add('pieces-container');
+    
+        // Create a piece name element
+        const pieceName = document.createElement('p');
+        pieceName.textContent = `${piece.name}`;
+        pieceName.classList.add('piece-text');
+    
+        // Create a piece image element, if an image URL exists
+        if (piece.image_urls && piece.image_urls.length > 0) {
+          const pieceImage = document.createElement('img');
+          // If the image doesn't start with http:// or https://, then add https://
+          if (!piece.image_urls[0].startsWith('http://') && !piece.image_urls[0].startsWith('https://')) {
+            pieceImage.src = 'https://' + piece.image_urls[0];
+          } else {
+            pieceImage.src = piece.image_urls[0];
           }
-
-                  // Create a new server message element for each piece
-            const pieceMessageElement = createMessageElement('', false); // Initial text is empty
-            pieceMessageElement.appendChild(pieceContainer);
-            chatList.appendChild(pieceMessageElement);
-        });
+          pieceImage.classList.add("piece-image");
+    
+          pieceImage.addEventListener('click', () => {
+            window.open(piece.url, '_blank');
+          });
+    
+          rowContainer.appendChild(pieceImage);
         }
-  
-      // Scroll to the bottom of the chat history
-      document.getElementById('chatHistory').scrollTop = chatList.scrollHeight;
-    }
-  );
+    
+        // Append the piece name to the row container
+        rowContainer.appendChild(pieceName);
+    
+        // Append the row container to the message element
+        messageElement.appendChild(rowContainer);
+      });
+    
+      // Append the message element to the chat list
+      chatList.appendChild(messageElement);
+    }    
+
+    // Scroll to the bottom of the chat history
+    document.getElementById('chatHistory').scrollTop = chatList.scrollHeight;
+  });
 }

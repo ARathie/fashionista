@@ -1,17 +1,28 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" type="text/css" href="content_styles.css">
-  </head>
-  <body>
-    <div id="chatHistory">
-      <ul id="chatList" style="list-style-type: none; padding: 0;"></ul>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" type="text/css" href="popup_styles.css">
+  <div class="top-bar">
+    <img id="messager-icon">
+    <div id="topbar-text">
+      <h2 style="margin-bottom: 0px;">Fai</h2>
+      <p style="margin-top: 0px;">Responds within a minute</p>
     </div>
+  </div>
+  <div id="chatHistory">
+    <ul id="chatList" style="list-style-type: none; padding: 0;"></ul>
+  </div>
+  <div id="chatInputInterface">
     <form id="chatForm">
-      <input type="text" id="inputData" placeholder="Type your message..." />
-      <button id="sendPostRequest">Send</button>
+      <input type="text" id="inputData" autocomplete="off" placeholder="Ask a question..." />
+      <div style="width:10px;"></div>
+      <div>
+        <div style="height:15px;"></div>
+        <button id="sendPostRequest" class="send-button"></button>
+        <div style="height:15px;"></div>
+      </div>
+      <div style="width:17px;"></div>
     </form>
-    <script src="popup.js"></script>
-  </body>
+  </div>
+  <script src="popup.js"></script>
 </html>

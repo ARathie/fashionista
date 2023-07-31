@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request
 import db_functions
 import time, json
 import openai_utils
-from infer_product_category import allowed_categories, allowed_colors, allowed_genders
+from infer_product_category import allowed_categories, allowed_colors, allowed_genders, allowed_product_names
 
 import constants
 import twilio_helpers
@@ -23,7 +23,7 @@ def hello():
 def insert_user_into_db():
     print("Got a POST request")
     request_data = request.get_json()
-    email = "ashwin.rathie@gmail.com"
+    email = "abhinav.rathie@gmail.com"
     if email is None:
         return jsonify(error="email field is required"), 400
 
@@ -41,25 +41,51 @@ def format_messages_with_starter_prompt(messages):
     messages_to_send = []
     messages_to_send.append({
         "role": "user",
-        # "content": """You are a fashion concierge, who is helping advise someone on purchasing an outfit from an online shopping website. The user will give you a description of the type of outfit that they would like to be wearing, and you will return a JSON object containing an "outfit_pieces" key, which is an object containing multiple outfit pieces (like "top: <shirt_description>, bottom: <pants_description>", etc), along with a “rationale” key stored inside the JSON object. This rationale will address why the various pieces fit together with each other and how they fit in with what the user asked for, and will be returned directly to the user in a chat window so it should be conversational in nature. Please output only this JSON object, and when you are producing the JSON object, please produce the “rationale” key first. In later parts of the conversation, you will update the outfit based on user feedback. Additionally, be relatively descriptive with your returned product descriptions. The conversation will now begin, and remember, each time you respond, you will respond with correctly formatted JSON."""
-        "content": f"""You are a fashion concierge, who is helping advise someone on purchasing an outfit from an online shopping website. The user will give you a description of the type of outfit that they would like to be wearing, and you will return a JSON object containing an "outfit_pieces" key, which is an object containing multiple outfit pieces (like "top: <shirt_description>, bottom: <pants_description>", etc), along with a “rationale” key stored inside the JSON object. This rationale will address why the various pieces fit together with each other and how they fit in with what the user asked for, and will be returned directly to the user in a chat window so it should be conversational in nature. In later parts of the conversation, you will update the outfit based on user feedback. Additionally, be relatively descriptive with your returned product descriptions. The conversation will now begin, and remember, each time you respond, you will respond with correctly formatted JSON. Also, realize that in some cases, you won't need to output the full JSON object, and can instead just output the "rationale" key (for example, when the user is asking more general questions about their style)
+        # "content": f"""You are a fashion concierge, who is helping advise someone on purchasing an outfit from an online shopping website. The user will give you a description of the type of outfit that they would like to be wearing, and you will return a JSON object containing an "outfit_pieces" key, which is an object containing multiple outfit pieces (like "top: <shirt_description>, bottom: <pants_description>", etc), along with a “rationale” key stored inside the JSON object. This rationale will address why the various pieces fit together with each other and how they fit in with what the user asked for, and will be returned directly to the user in a chat window so it should be conversational in nature. Please output only this JSON object, and when you are producing the JSON object, please produce the “rationale” key first. In later parts of the conversation, you will update the outfit based on user feedback. Additionally, be relatively descriptive with your returned product descriptions. The conversation will now begin, and remember, each time you respond, you will respond with correctly formatted JSON."""
+        "content": f"""As an AI fashion concierge, you're providing style advice for users shopping on Turtleson, an online lifestyle apparel brand. Turtleson offers a variety of products, from outerwear and polos to pants and shoes. It caters to active lifestyles, with collections such as Essentials, Accessories, Summer Looks, and Women’s Polos.
 
-Please return a JSON object with the following format, in the following order (remember, ONLY provide the keys that are specified below, nothing else):
+You'll help users select individual items or entire outfits, based on their needs. Your guidance should be represented as a JSON object, featuring a 'rationale' key that explains why the suggested pieces align with the user's request, and an 'outfit_pieces' key detailing each suggested clothing item. When suggesting an individual item, it should still fall under the 'outfit_pieces' key. Note that you may suggest multiple items within the same clothing_type only if they are only looking for clothing_type, but ensure they are different.
+
+Ensure your responses are detailed and formatted correctly as JSON objects.
+
+Format of the response JSON object:
 {{
-  "rationale": <rationale for the output>,
-  "outfit_pieces": {{
-    <clothing_type>: {{
-      "description": <descriptive description of the piece of clothing>,
-      "colors": [<colors of the piece of clothing>],
-      "gender": <gender that it's for>
-    }}
+  'rationale': '<why these clothing items align with the user's request>',
+  'outfit_pieces': {{
+    '<clothing_type>': [{{
+      'description': '<descriptive details of the clothing piece>',
+      'colors': ['<recommended colors>'],
+      'gender': '<intended gender of the item>'
+    }}]
   }}
 }}
 
-Rules:
-- the outfit_pieces can only contain the following categories as keys: {allowed_categories}.
-- when choosing colors, you can only recommend colors from the following: {allowed_colors}. Please recommend multiple colors that would work.
-- when specifying the gender, you can only use the following: {allowed_genders}"""
+Guidelines:
+- Select 'clothing_type' from this predefined list: {allowed_categories}.
+- Recommend colors only from the following palette: {allowed_colors}.
+- Specify 'gender' using one of the allowed options: {allowed_genders}.
+"""
+
+        
+        
+#         """You are a fashion concierge, who is helping advise someone on purchasing an outfit from an online shopping website. The user will give you a description of the type of outfit that they would like to be wearing, and you will return a JSON object containing an "outfit_pieces" key, which is an object containing multiple outfit pieces (like "top: <shirt_description>, bottom: <pants_description>", etc), along with a “rationale” key stored inside the JSON object. This rationale will address why the various pieces fit together with each other and how they fit in with what the user asked for, and will be returned directly to the user in a chat window so it should be conversational in nature. In later parts of the conversation, you will update the outfit based on user feedback. Additionally, be relatively descriptive with your returned product descriptions. The conversation will now begin, and remember, each time you respond, you will respond with correctly formatted JSON. Also, realize that in some cases, you won't need to output the full JSON object, and can instead just output the "rationale" key (for example, when the user is asking more general questions about their style)
+
+# Please return a JSON object with the following format, in the following order (remember, ONLY provide the keys that are specified below, nothing else):
+# {{
+#   "rationale": <rationale for the output>,
+#   "outfit_pieces": {{
+#     <clothing_type>: {{
+#       "description": <descriptive description of the piece of clothing>,
+#       "colors": [<colors of the piece of clothing>],
+#       "gender": <gender that it's for>
+#     }}
+#   }}
+# }}
+
+# Rules:
+# - the outfit_pieces can only contain the following categories as keys: {allowed_categories}.
+# - when choosing colors, you can only recommend colors from the following: {allowed_colors}. Please recommend multiple colors that would work.
+# - when specifying the gender, you can only use the following: {allowed_genders}"""
     })
     for message in messages:
         if message["sent_from_user"]:
@@ -168,7 +194,7 @@ def post():
     print("Got a POST request")
     request_data = request.get_json()
     message = request_data.get('message')
-    email = 'ashwin.rathie@gmail.com'
+    email = 'abhinav.rathie@gmail.com'
     if message is None:
         return jsonify(error="message field is required"), 400
 
@@ -196,7 +222,7 @@ def post():
         print("Got JSON Response: ", json_response)
         # Get the rationale
         rationale = json_response["rationale"]
-        print("Got rationale: ", rationale)
+        print("Got rationale2: ", rationale)
         # Get the outfit pieces
         outfit_pieces = json_response["outfit_pieces"]
         print("Got outfit pieces: ", outfit_pieces)
@@ -209,15 +235,18 @@ def post():
 
     for piece_type in outfit_pieces.keys():
         # Search through the database for the products that match the outfit pieces
-        outfit_piece = outfit_pieces[piece_type]
-        try:
-            piece_to_return = search_for_outfit_piece(outfit_piece, piece_type, rationale, num_products_to_consider=3)
-            if piece_to_return is None:
-                continue
-            pieces_to_return.append(piece_to_return)
-            product_ids.append(piece_to_return["product_id"])
-        except Exception as e:
-            print(f"Exception when searching for outfit piece: {e}")
+        outfit_piece_options = outfit_pieces[piece_type]
+        
+        for outfit_piece in outfit_piece_options:
+            try:
+                print("outfit_piece: ", outfit_piece)
+                piece_to_return = search_for_outfit_piece(outfit_piece, piece_type, rationale, num_products_to_consider=3)
+                if piece_to_return is None:
+                    continue
+                pieces_to_return.append(piece_to_return)
+                product_ids.append(piece_to_return["product_id"])
+            except Exception as e:
+                print(f"Exception when searching for outfit piece: {e}")
     
     # Insert the bot's response into the database
     bot_message_info = {

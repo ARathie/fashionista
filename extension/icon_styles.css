@@ -1,0 +1,43 @@
+#website-talker-floating-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+  }
+  
+  #website-talker-popup-wrapper {
+    position: fixed;
+    bottom: 92px;
+    right: 20px;
+    width: 450px;
+    height: 704px;
+    /* height: min(704px, 100% - 104px);
+    min-height: 80px;
+    max-height: 704px; */
+    background-color: white;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 5px 40px;
+    z-index: 9998;
+    overflow: hidden;
+    border-radius: 16px;
+    /* transform-origin: right bottom; */
+    /* transition: width 200ms ease 0s, 
+                height 200ms ease 0s, 
+                max-height 200ms ease 0s, 
+                transform 300ms cubic-bezier(0, 1.2, 1, 1) 0s, 
+                opacity 83ms ease-out 0s; */
+  }
+  
+.fade-out {
+  transition: opacity 0.2s; 
+  opacity: 0;
+}
+
+.fade-in {
+  transition: opacity 0.2s;
+  opacity: 1;
+}
