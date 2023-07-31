@@ -135,4 +135,4 @@ db_data/
 openai_key.txt
 
 node_modules/
-extension/.DS_Store
+.DS_Store
