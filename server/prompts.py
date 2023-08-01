@@ -8,7 +8,7 @@ Ensure your responses are detailed and formatted correctly as JSON objects.
 
 Format of the response JSON object:
 {{
-  'rationale': '<why these clothing items align with the user's request and why that item could be an offering of this store>',
+  'rationale': '<why these clothing items align with the user's request>',
   'outfit_pieces': {{
     '<clothing_type>': [{{
       'description': '<descriptive details of the clothing piece>',
