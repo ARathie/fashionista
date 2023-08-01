@@ -1,5 +1,5 @@
-function getFirstMessage(storeName) {
-    return "Hey there! My name is Fai, and I'm your personal fashion advisor here at " + 
+export function getFirstMessage(storeName) {
+    return "Hello! I'm Fai, your personal fashion advisor here at " + 
     storeName +
-    ". Let me know how I can help!"
+    ". Need help finding a style or item? Preparing for an event? Or simply seeking fashion inspiration? Just let me know - I'm at your service."
 }

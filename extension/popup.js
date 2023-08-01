@@ -1,3 +1,5 @@
+import { getFirstMessage } from "./helpers.js";
+
 let userEmail = '';
 // const baseServerUrl = "https://y41pim9ut5.execute-api.us-west-1.amazonaws.com/dev";
 const baseServerUrl = 'http://127.0.0.1:5001';
@@ -28,12 +30,6 @@ function getEmail(callback) {
       xhr.send();
     }
   });
-}
-
-function getFirstMessage(storeName) {
-  return "Hello! I'm Fai, your personal fashion advisor here at " + 
-  storeName +
-  ". Need help finding a style or item? Preparing for an event? Or simply seeking fashion inspiration? Just let me know - I'm at your service."
 }
 
 function storeUserEmail(email) {
