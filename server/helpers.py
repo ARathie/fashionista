@@ -7,7 +7,7 @@ def format_messages_with_starter_prompt(messages):
     """Formats messages into a format that OpenAI can understand."""
     messages_to_send = []
     messages_to_send.append({
-        "role": "user",
+        "role": "system",
         "content": prompts.STARTER_PROMPT
     })
     for message in messages:
@@ -29,13 +29,14 @@ def format_messages_with_starter_prompt(messages):
 # Searches for the closest piece of clothing to the outfit piece that is passed in.
 def search_for_potential_pieces(outfit_piece, piece_type, num_products_to_consider=3):
     # Search through the database for the products that match the outfit pieces
+    piece_name = outfit_piece["name"]
     piece_description = outfit_piece["description"]
     print(piece_description)
     gender = outfit_piece["gender"]
     colors = outfit_piece["colors"]
 
     # Make a string that can be embedded into the database and is useful for searching
-    embeddable_text = f"Type: {piece_type}; Description: {piece_description}; Colors: {', '.join(colors)}"
+    embeddable_text = f"Product Name: {piece_type}; Description: {piece_description}; Color: {', '.join(colors)}"
 
     # Search for the products that match the outfit piece
     similar_products = db_functions.find_similar_products(embeddable_text, piece_type, gender, num_closest_products=num_products_to_consider, store_name='turtleson')

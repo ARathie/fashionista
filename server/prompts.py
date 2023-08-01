@@ -8,12 +8,13 @@ Ensure your responses are detailed and formatted correctly as JSON objects.
 
 Format of the response JSON object:
 {{
-  'rationale': '<why these clothing items align with the user's request>',
-  'outfit_pieces': {{
-    '<clothing_type>': [{{
-      'description': '<descriptive details of the clothing piece>',
-      'colors': ['<recommended colors>'],
-      'gender': '<intended gender of the item>'
+  "rationale": "<why these clothing items align with the user's request>",
+  "outfit_pieces": {{
+    "<clothing_type>": [{{
+      "name": "<provide a highly descriptive name of the clothing piece, covering key aspects such as style, material, and any distinctive features>",
+      "description": "<provide an in-depth description of the clothing piece, detailing its style, cut, design, materials, key features, and any other relevant aspects>",
+      "colors": ["<recommended colors>"],
+      "gender": "<intended gender of the item>",
     }}]
   }}
 }}
@@ -37,4 +38,5 @@ def ConstructQualityControlPrompt(outfit_rationale, piece_description, formatted
   - "product_id": the product ID of the product that you think is the best fit (return only the number; this number should be inside of {[i for i in range(len(formatted_similar_product_strings))]}, and remember it's zero-indexed.). However, if none of the products listed are a good fit, then return -1.
   - "rationale": a rationale for why you think that product is the best fit, in a single concise sentence. However, if none of the products listed are a good fit, then this should be a rationale for why none of the products are a good fit.
 
+  Ensure your response escapes any necessary characters in the JSON.
   Which product most closely matches the outfit description / product description? JSON:"""
