@@ -8,7 +8,7 @@ Ensure your responses are detailed and formatted correctly as JSON objects.
 
 Format of the response JSON object:
 {{
-  'rationale': '<why these clothing items align with the user's request>',
+  'rationale': '<why these clothing items align with the user's request and why that item could be an offering of this store>',
   'outfit_pieces': {{
     '<clothing_type>': [{{
       'description': '<descriptive details of the clothing piece>',
@@ -24,7 +24,7 @@ Guidelines:
 - Specify 'gender' using one of the allowed options: {allowed_genders}.
 """
 
-def ConstructQualityControlPrompt(outfit_rationale):
+def ConstructQualityControlPrompt(outfit_rationale, piece_description, formatted_similar_product_strings):
   newline = '\n'
   return f"""You are a quality control AI, and your job is to select which product description is closest to the provided description and best fits in with the outfit described in the rationale.
 
