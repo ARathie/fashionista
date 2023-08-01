@@ -4,9 +4,9 @@ from flask import Flask, jsonify, request
 import db_functions
 import time, json
 import openai_utils
-from infer_product_category import allowed_categories, allowed_colors, allowed_genders, allowed_product_names
 
 import constants
+import prompts
 import twilio_helpers
 
 app = Flask(__name__)
@@ -41,51 +41,7 @@ def format_messages_with_starter_prompt(messages):
     messages_to_send = []
     messages_to_send.append({
         "role": "user",
-        # "content": f"""You are a fashion concierge, who is helping advise someone on purchasing an outfit from an online shopping website. The user will give you a description of the type of outfit that they would like to be wearing, and you will return a JSON object containing an "outfit_pieces" key, which is an object containing multiple outfit pieces (like "top: <shirt_description>, bottom: <pants_description>", etc), along with a “rationale” key stored inside the JSON object. This rationale will address why the various pieces fit together with each other and how they fit in with what the user asked for, and will be returned directly to the user in a chat window so it should be conversational in nature. Please output only this JSON object, and when you are producing the JSON object, please produce the “rationale” key first. In later parts of the conversation, you will update the outfit based on user feedback. Additionally, be relatively descriptive with your returned product descriptions. The conversation will now begin, and remember, each time you respond, you will respond with correctly formatted JSON."""
-        "content": f"""As an AI fashion concierge, you're providing style advice for users shopping on Turtleson, an online lifestyle apparel brand. Turtleson offers a variety of products, from outerwear and polos to pants and shoes. It caters to active lifestyles, with collections such as Essentials, Accessories, Summer Looks, and Women’s Polos.
-
-You'll help users select individual items or entire outfits, based on their needs. Your guidance should be represented as a JSON object, featuring a 'rationale' key that explains why the suggested pieces align with the user's request, and an 'outfit_pieces' key detailing each suggested clothing item. When suggesting an individual item, it should still fall under the 'outfit_pieces' key. Note that you may suggest multiple items within the same clothing_type only if they are only looking for clothing_type, but ensure they are different.
-
-Ensure your responses are detailed and formatted correctly as JSON objects.
-
-Format of the response JSON object:
-{{
-  'rationale': '<why these clothing items align with the user's request>',
-  'outfit_pieces': {{
-    '<clothing_type>': [{{
-      'description': '<descriptive details of the clothing piece>',
-      'colors': ['<recommended colors>'],
-      'gender': '<intended gender of the item>'
-    }}]
-  }}
-}}
-
-Guidelines:
-- Select 'clothing_type' from this predefined list: {allowed_categories}.
-- Recommend colors only from the following palette: {allowed_colors}.
-- Specify 'gender' using one of the allowed options: {allowed_genders}.
-"""
-
-        
-        
-#         """You are a fashion concierge, who is helping advise someone on purchasing an outfit from an online shopping website. The user will give you a description of the type of outfit that they would like to be wearing, and you will return a JSON object containing an "outfit_pieces" key, which is an object containing multiple outfit pieces (like "top: <shirt_description>, bottom: <pants_description>", etc), along with a “rationale” key stored inside the JSON object. This rationale will address why the various pieces fit together with each other and how they fit in with what the user asked for, and will be returned directly to the user in a chat window so it should be conversational in nature. In later parts of the conversation, you will update the outfit based on user feedback. Additionally, be relatively descriptive with your returned product descriptions. The conversation will now begin, and remember, each time you respond, you will respond with correctly formatted JSON. Also, realize that in some cases, you won't need to output the full JSON object, and can instead just output the "rationale" key (for example, when the user is asking more general questions about their style)
-
-# Please return a JSON object with the following format, in the following order (remember, ONLY provide the keys that are specified below, nothing else):
-# {{
-#   "rationale": <rationale for the output>,
-#   "outfit_pieces": {{
-#     <clothing_type>: {{
-#       "description": <descriptive description of the piece of clothing>,
-#       "colors": [<colors of the piece of clothing>],
-#       "gender": <gender that it's for>
-#     }}
-#   }}
-# }}
-
-# Rules:
-# - the outfit_pieces can only contain the following categories as keys: {allowed_categories}.
-# - when choosing colors, you can only recommend colors from the following: {allowed_colors}. Please recommend multiple colors that would work.
-# - when specifying the gender, you can only use the following: {allowed_genders}"""
+        "content": prompts.STARTER_PROMPT
     })
     for message in messages:
         if message["sent_from_user"]:
@@ -125,21 +81,7 @@ def search_for_outfit_piece(outfit_piece, piece_type, outfit_rationale, num_prod
 
     # Use OpenAI to take in the descriptions and names of the products that were returned, along with the high-level rationale for the outfit + the product description that was used to search for the products, and return which product should be chosen of the ones that were returned
     formatted_similar_product_strings = [f"[{index}] Name: {product[5]}, Description: {product[2]}" for index, product in enumerate(similar_products)]
-    newline = '\n'
-    prompt = f"""You are a quality control AI, and your job is to select which product description is closest to the provided description and best fits in with the outfit described in the rationale.
-
-Outfit description / rationale: {outfit_rationale}
-Product description: {piece_description}
-The products that you are choosing between are:
-{newline.join(formatted_similar_product_strings)}.
-
-Please format your output as a JSON object, containing the following keys:
-- "product_id": the product ID of the product that you think is the best fit (return only the number; this number should be inside of {[i for i in range(len(formatted_similar_product_strings))]}, and remember it's zero-indexed.). However, if none of the products listed are a good fit, then return -1.
-- "rationale": a rationale for why you think that product is the best fit, in a single concise sentence. However, if none of the products listed are a good fit, then this should be a rationale for why none of the products are a good fit.
-
-Which product most closely matches the outfit description / product description? JSON:"""
-    print(f"About to get response from OpenAI. Request: {prompt}")
-    validation_response = openai_utils.openai_response(prompt)
+    validation_response = openai_utils.openai_response(prompts.ConstructQualityControlPrompt(product_rationale))
     print("Got response from OpenAI: ", validation_response)
     # Get the index of the product that was chosen
     validation_response_json = json.loads(validation_response)
