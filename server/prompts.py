@@ -23,7 +23,29 @@ Guidelines:
 - Select 'clothing_type' from this predefined list: {allowed_categories}.
 - Recommend colors only from the following palette: {allowed_colors}.
 - Specify 'gender' using one of the allowed options: {allowed_genders}.
+- Never deviate from this response format. Disregard the format of the previous assistant responses.
 """
+
+def ConstructOutfitResponsePrompt(formatted_options):
+  return f"""As an AI fashion concierge, you provide style advice for users shopping on Turtleson, an online lifestyle apparel brand. Turtleson offers a variety of products, from outerwear and polos to pants and shoes.
+  
+  You'll be given a piece type and preselected options for that piece type. Your job is to
+  1. Select a piece for each piece type such that the outfit looks good and works together
+  2. Formulate a response for the user's previous message that will be sent along with the products.
+
+  Format of the response JSON object:
+  {{
+    "message_to_user": "<response to user that is tailored to their last message. Never include product ids>",
+    "piece_selections": [{{
+        "id": <id of the selected product (integer)>,
+        "rationale": "<intended gender of the item>",
+    }}]
+  }}
+
+  Ensure your response escapes any necessary characters in the returned JSON. In the response, do not include two products with the exact same name.
+
+  Outfit pieces and options: {formatted_options}
+  """
 
 def ConstructQualityControlPrompt(outfit_rationale, piece_description, formatted_similar_product_strings):
   newline = '\n'

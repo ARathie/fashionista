@@ -19,8 +19,6 @@ def openai_embedding(input_text):
     )["data"][0]["embedding"]
     return embedding
 
-
-
 def openai_response(message_content):
     """Generates a response for a given user's message using the OpenAI ChatCompletion API
     The model used for generating the response is gpt-3.5-turbo."""

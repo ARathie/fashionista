@@ -23,7 +23,7 @@ def hello():
 def insert_user_into_db():
     print("Got a POST request")
     request_data = request.get_json()
-    email = "abhinav.rathie4@gmail.com"
+    email = "abhinav.rathie2@gmail.com"
     if email is None:
         return jsonify(error="email field is required"), 400
 
@@ -60,30 +60,35 @@ def post():
     db_functions.insert_message_into_db(user_message_info)
 
     # Use the email to get the user's previous messages, and use that to generate a response
-    user_messages = db_functions.get_all_messages_for_user(email)
+    user_messages = db_functions.get_messages_for_user(email, "STARTER")
     
     # Format the messages into a format that OpenAI can understand
     messages = helpers.format_messages_with_starter_prompt(user_messages)
-    print("Formatted messages: ", messages)
     response = openai_utils.openai_response_multiple_messages(messages)
-
+    
     try:
         # Parse the response as a json string
-        print("About to get JSON response")
         json_response = json.loads(response, strict=False)
-        print("Got JSON Response: ", json_response)
         # Get the rationale
         outfit_rationale = json_response["rationale"]
-        print("Got rationale2: ", outfit_rationale)
         # Get the outfit pieces
         outfit_pieces = json_response["outfit_pieces"]
-        print("Got outfit pieces: ", outfit_pieces)
     except Exception as e:
         print("Got exception: ", e)
         outfit_pieces = {}
-
+    
     pieces_to_return = []
     product_ids = []
+    potential_product_tuples = []
+
+    bot_message_info = {
+        "email": email,
+        "content": response,
+        "sent_from_user": False,
+        "product_ids": product_ids,
+        "type": "STARTER"
+    }
+    db_functions.insert_message_into_db(bot_message_info)
 
     for piece_type in outfit_pieces.keys():
         # Search through the database for the products that match the outfit pieces
@@ -91,30 +96,27 @@ def post():
         
         for outfit_piece in outfit_piece_options:
             try:
-                print("outfit_piece: ", outfit_piece)
-                potential_products = helpers.search_for_potential_pieces(outfit_piece, piece_type, num_products_to_consider=3)
-                if potential_products is None:
-                    continue
-                piece_to_return = helpers.select_piece(potential_products, outfit_piece, outfit_rationale)
-                pieces_to_return.append(piece_to_return)
-                product_ids.append(piece_to_return["product_id"])
+                potential_product_tuples.append((piece_type, helpers.search_for_potential_pieces(outfit_piece, piece_type, num_products_to_consider=3)))
             except Exception as e:
                 print(f"Exception when searching for outfit piece: {e}")
+
+    if len(potential_product_tuples) != 0:
+        user_messages = db_functions.get_messages_for_user(email, "RESPONSE")
+        response, response_json, pieces_to_return = helpers.finalize_pieces_and_get_text_response(potential_product_tuples, user_messages)
+        outfit_rationale = response_json['message_to_user']
+        product_ids = [piece["product_id"] for piece in pieces_to_return]
     
-    # Insert the bot's response into the database
-    bot_message_info = {
-        "email": email,
-        "content": response,
-        "sent_from_user": False,
-        "product_ids": product_ids
-    }
-    db_functions.insert_message_into_db(bot_message_info)
+        # Insert the bot's response into the database
+        bot_message_info = {
+            "email": email,
+            "content": response,
+            "sent_from_user": False,
+            "product_ids": product_ids,
+            "type": "RESPONSE"
+        }
+        db_functions.insert_message_into_db(bot_message_info)
 
     # Return a json object with the text being the outfit_rationale, and the outfit pieces as a json dump
-    print("Returning JSON response: ", {
-        "text": outfit_rationale,
-        "outfit_pieces": pieces_to_return
-    })
     return jsonify({
         "text": outfit_rationale,
         "outfit_pieces": pieces_to_return

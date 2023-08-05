@@ -35,7 +35,7 @@ def find_similar_products(embeddable_text, category, gender, num_closest_product
     # New: use pgvector to find the most similar products
     connection, cursor = get_db_connection_and_cursor()
     cursor.execute("""
-        SELECT id, created_at, description, product_embedding, tags, name, price, url, image_urls, product_embedding <-> CAST(%(embedding)s AS vector) AS distance
+        SELECT id, created_at, description, colors, tags, name, price, url, image_urls, product_embedding <-> CAST(%(embedding)s AS vector) AS distance
         FROM product_info
         WHERE 
             category = %(category)s AND 
@@ -199,6 +199,9 @@ def insert_message_into_db(message_info):
     sent_from_user = message_info["sent_from_user"]
     content = message_info["content"]
     product_ids = message_info["product_ids"]
+    message_type = message_info.get("type")
+    print("message_info: ", message_info)
+    print("message_type: ", message_type)
     user_id = get_user_id_from_email(email)
 
     if user_id is None:
@@ -208,13 +211,14 @@ def insert_message_into_db(message_info):
     # Insert the message info into the database
     connection, cursor = get_db_connection_and_cursor()
     cursor.execute("""
-        INSERT INTO messages (user_id, content, product_ids, sent_from_user)
-        VALUES (%(user_id)s, %(content)s, %(product_ids)s, %(sent_from_user)s)
+        INSERT INTO messages (user_id, content, product_ids, sent_from_user, type)
+        VALUES (%(user_id)s, %(content)s, %(product_ids)s, %(sent_from_user)s, %(type)s)
         """, {
             "user_id": user_id,
             "content": content,
             "product_ids": product_ids,
-            "sent_from_user": sent_from_user
+            "sent_from_user": sent_from_user,
+            "type": message_type
     })
 
     # Make the changes to the database persistent
@@ -224,7 +228,7 @@ def insert_message_into_db(message_info):
     connection.close()
 
 
-def get_all_messages_for_user(email, limit=8):
+def get_messages_for_user(email, response_type, limit=8):
     """Get all messages for a user."""
     # Get the user id from the email
     user_id = get_user_id_from_email(email)
@@ -235,12 +239,15 @@ def get_all_messages_for_user(email, limit=8):
         SELECT 
             user_id, product_ids, content, sent_from_user
         FROM messages
-        WHERE user_id = %(user_id)s
+        WHERE 
+            user_id = %(user_id)s AND
+            (sent_from_user = TRUE OR type = %(type)s)
         ORDER BY created_at DESC
         LIMIT %(limit)s
         """, {
             "user_id": user_id,
-            "limit": limit
+            "limit": limit,
+            "type": response_type
     })
     messages = cursor.fetchall()
     # Close communication with the database
