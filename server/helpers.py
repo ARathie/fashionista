@@ -72,10 +72,13 @@ def finalize_pieces_and_get_text_response(potential_product_tuples, messages):
         for product in potential_product_tuple[1]:
             product_id_to_product[product[0]] = product
    
+    print("product_id_to_product: ", product_id_to_product)
     response = openai_utils.openai_response_multiple_messages(format_messages_with_response_prompt(messages, formatted_options))
     
     response_json = json.loads(response)
     piece_selections = response_json['piece_selections']
+    print("product_id_to_product: ", product_id_to_product)
+    print("response_json: ", response_json)
 
     selected_product_ids = [selection['id'] for selection in piece_selections]
     selected_products = [product_id_to_product[id] for id in selected_product_ids]

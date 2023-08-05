@@ -43,6 +43,7 @@ def ConstructOutfitResponsePrompt(formatted_options):
   }}
 
   Ensure your response escapes any necessary characters in the returned JSON. In the response, do not include two products with the exact same name.
+  Do not provide an id that is not included in the options below. Choose only from the products listed.
 
   Outfit pieces and options: {formatted_options}
   """
