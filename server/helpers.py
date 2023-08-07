@@ -36,7 +36,7 @@ def search_for_potential_pieces(outfit_piece, piece_type, num_products_to_consid
     colors = outfit_piece["colors"]
 
     # Make a string that can be embedded into the database and is useful for searching
-    embeddable_text = f"Product Name: {piece_type}; Description: {piece_description}; Color: {', '.join(colors)}"
+    embeddable_text = f"Product Name: {piece_name}; Description: {piece_description}; Color: {', '.join(colors)}"
 
     # Search for the products that match the outfit piece
     similar_products = db_functions.find_similar_products(embeddable_text, piece_type, gender, num_closest_products=num_products_to_consider, store_name='turtleson')
