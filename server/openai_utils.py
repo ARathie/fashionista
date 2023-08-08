@@ -1,5 +1,6 @@
 import openai
 import numpy as np
+from prompts import create_function_descriptions
 
 openai.api_key = "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"
 
@@ -32,12 +33,13 @@ def openai_response(message_content):
     return response_text
 
 
-def openai_response_multiple_messages(messages):
+def openai_response_multiple_messages(messages, product_ids=[]):
     """Similar to openai_response, but it allows for multiple messages to be sent in a conversation format to the OpenAI API."""
 
     response = openai.ChatCompletion.create(model=DEFAULT_OPENAI_MODEL,
-                                            messages=messages)
-    response_text = response["choices"][0]["message"]["content"]
+                                            messages=messages,
+                                            functions=create_function_descriptions(product_ids))
+    response_text = response["choices"][0]["message"]
     return response_text
 
 

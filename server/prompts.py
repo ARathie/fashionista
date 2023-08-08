@@ -1,42 +1,102 @@
 from infer_product_category import allowed_categories, allowed_colors, allowed_genders, allowed_product_names
 
-STARTER_PROMPT = f"""As an AI fashion concierge, you're providing style advice for users shopping on Turtleson, an online lifestyle apparel brand. Turtleson offers a variety of products, from outerwear and polos to pants and shoes. It caters to active lifestyles, with collections such as Essentials, Accessories, Summer Looks, and Women’s Polos.
+STARTER_PROMPT = f"""As an AI fashion concierge, you're an interactive chat agent for users shopping on Turtleson, an online lifestyle apparel brand. Turtleson offers a variety of products, from outerwear and polos to pants and shoes. It caters to active lifestyles, with collections such as Essentials, Accessories, Summer Looks, and Women’s Polos.
 
-You'll help users select individual items or entire outfits, based on their needs. Your guidance should be represented as a JSON object, featuring a 'rationale' key that explains why the suggested pieces align with the user's request, and an 'outfit_pieces' key detailing each suggested clothing item. When suggesting an individual item, it should still fall under the 'outfit_pieces' key. Note that you may suggest multiple items within the same clothing_type only if they are only looking for clothing_type, but ensure they are different.
+You'll help users select individual items or entire outfits with style advice, based on their needs. You will also answer any questions about the store, given the information that you have.
 
-Ensure your responses are detailed and formatted correctly as JSON objects.
+If you don't need to select pieces or an outfit, call the display_user_text_message function.
 
-Format of the response JSON object:
-{{
-  "rationale": "<why these clothing items align with the user's request>",
-  "outfit_pieces": {{
-    "<clothing_type>": [{{
-      "name": "<provide a highly descriptive name of the clothing piece, covering key aspects such as style, material, and any distinctive features>",
-      "description": "<provide an in-depth description of the clothing piece, detailing its style, cut, design, materials, key features, and any other relevant aspects>",
-      "colors": ["<recommended colors>"],
-      "gender": "<intended gender of the item>",
-    }}]
-  }}
-}}
+Be succinct but descriptive in your answers. Limit the text to 125 words or less
 
-Guidelines:
-- Select 'clothing_type' from this predefined list: {allowed_categories}.
-- Recommend colors only from the following palette: {allowed_colors}.
-- Specify 'gender' using one of the allowed options: {allowed_genders}.
+When curating items or outfits,
+1. Generate possible pieces that could exist at this store and match the user's preferences
+2. Call find_store_pieces with these generated pieces
+3. Select the pieces to create the best outfit or the best few items based on the return value of find_store_pieces. Do not select multiple pieces with the same name.
+4. Call display_user_message_with_pieces. Ensure the selected pieces have different names
 """
 
-def ConstructQualityControlPrompt(outfit_rationale, piece_description, formatted_similar_product_strings):
-  newline = '\n'
-  return f"""You are a quality control AI, and your job is to select which product description is closest to the provided description and best fits in with the outfit described in the rationale.
-
-  Outfit description / rationale: {outfit_rationale}
-  Product description: {piece_description}
-  The products that you are choosing between are:
-  {newline.join(formatted_similar_product_strings)}.
-
-  Please format your output as a JSON object, containing the following keys:
-  - "product_id": the product ID of the product that you think is the best fit (return only the number; this number should be inside of {[i for i in range(len(formatted_similar_product_strings))]}, and remember it's zero-indexed.). However, if none of the products listed are a good fit, then return -1.
-  - "rationale": a rationale for why you think that product is the best fit, in a single concise sentence. However, if none of the products listed are a good fit, then this should be a rationale for why none of the products are a good fit.
-
-  Ensure your response escapes any necessary characters in the JSON.
-  Which product most closely matches the outfit description / product description? JSON:"""
+def create_function_descriptions(product_ids):
+  return [
+    {
+      'name': 'find_store_pieces',
+      'description': 'Returns an array of real piece options from the retailer based on the generated pieces',
+      'parameters': {
+          'type': 'object',
+          'required': ['pieces'],
+          'properties': {
+            'pieces': {
+              'type': 'array',
+              'items': {
+                'type': 'object',
+                'required': ['name', 'piece_description', 'gender', 'colors', 'piece_type'],
+                'properties': {
+                  'name': {
+                    'type': 'string',
+                    'description': 'a highly descriptive name of the clothing piece, covering key aspects such as style, material, and any distinctive features'
+                  },
+                  'piece_description': {
+                    'type': 'string',
+                    'description': 'an in-depth description of the clothing piece, detailing its style, cut, design, materials, key features, and any other relevant aspects'
+                  },
+                  'gender': {
+                    'type': 'string',
+                    'description': 'Gender of the piece. Select one of the allowed options: {allowed_genders}',
+                    'enum': allowed_genders
+                  },
+                  'colors': {
+                    'type': 'array',
+                    'items': {
+                      'type': 'string',
+                      'description': 'Color of the piece. Select one of the allowed options: {allowed_colors}',
+                      'enum': allowed_colors
+                    },
+                    'description': 'An array of allowed colors for the outfit.'
+                  },
+                  'piece_type': {
+                    'type': 'string',
+                    'description': 'Category of the piece. Select one of the allowed options: {allowed_categories}',
+                    'enum': allowed_categories
+                  }
+                }
+              }
+          }
+        }
+      }
+    },
+    {
+        'name': 'display_user_message_with_pieces',
+        'description': 'Formats and displays a message with fashion pieces to the user in a chatbot interface',
+        'parameters': {
+            'type': 'object',
+            'required': ['text', 'piece_ids'],
+            'properties': {
+                'text': {
+                    'type': 'string',
+                    'description': 'Text-only message to display to the user. Should respond to the previous user message and explain why the selected outfit or pieces works'
+                },
+                'piece_ids': {
+                    'type': 'array',
+                    'items': {
+                      'type': 'integer',
+                      'description': 'The Piece ID of a selected piece. Only select pieces that are directly relevant. Never select multiple pieces with the same name.',
+                      'enum': product_ids
+                    },
+                }
+            }
+        }
+    },
+    {
+        'name': 'display_user_text_message',
+        'description': 'Displays a text-only message to the user in a chatbot interface. Only call this after find_store_pieces is called.',
+        'parameters': {
+            'type': 'object',
+            'required': ['message'],
+            'properties': {
+              'message': {
+                'type': 'string',
+                'description': 'Message to display to the user. Should directly answer the user\'s last message. Strictly do not answer questions unrelated to your role as a chat agent for this store.'
+              }
+            }
+        },
+    }
+  ]

@@ -35,7 +35,7 @@ def find_similar_products(embeddable_text, category, gender, num_closest_product
     # New: use pgvector to find the most similar products
     connection, cursor = get_db_connection_and_cursor()
     cursor.execute("""
-        SELECT id, created_at, description, product_embedding, tags, name, price, url, image_urls, product_embedding <-> CAST(%(embedding)s AS vector) AS distance
+        SELECT id, created_at, description, colors, tags, name, price, url, image_urls, product_embedding <-> CAST(%(embedding)s AS vector) AS distance
         FROM product_info
         WHERE 
             category = %(category)s AND 
