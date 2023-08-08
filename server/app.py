@@ -65,7 +65,6 @@ def post():
         
         # Format the messages into a format that OpenAI can understand
         messages = helpers.format_messages_with_starter_prompt(user_messages)
-        print("Formatted messages: ", messages)
 
         text, product_ids, outfit_pieces = helpers.call_gpt(messages)
         bot_message_info = {
